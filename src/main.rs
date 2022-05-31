@@ -1,32 +1,55 @@
-use askama::Template;
-use async_std::task::block_on;
+use async_std::{sync::Mutex, task::block_on};
+use once_cell::sync::Lazy;
+use serde::Serialize;
+use tera::{Context, Tera};
 use tide::{Request, Response, Result};
+use tide_tera::TideTeraExt;
 
-#[derive(Template, Debug)]
-#[template(path = "index.html")]
-struct IndexPage {
+static TERA: Lazy<Mutex<Tera>> = Lazy::new(|| Mutex::new(Tera::new("templates/*.html").unwrap()));
+
+#[derive(Serialize, Debug, Clone)]
+struct MedicineInfo {
+    id: String,
+    code: String,
     name: String,
-    data: Vec<String>,
+    r#type: String,
+    price: u32,
+    quantity: i32,
+    import_date: String,
+    location: String,
 }
 
-async fn index_page(req: Request<()>) -> Result<Response> {
-    let res: Response = IndexPage {
-        name: req.param("name").unwrap_or("").to_owned(),
-        data: ["hii".to_string(), "sdfsd".to_string()].to_vec(),
-    }
-    .into();
-    Ok(res)
+async fn manage_page(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+
+    let mut context = Context::new();
+
+    let val = MedicineInfo {
+        id: 1.to_string(),
+        code: "fads".into(),
+        name: "Name".into(),
+        r#type: "Name".into(),
+        price: 12,
+        quantity: 12,
+        import_date: "date".into(),
+        location: "Location".into(),
+    };
+
+    context.insert("danhsach", &[&val; 10]);
+    tera.render_response("manage.html", &context)
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
+    tide::log::start();
 
     let mut server = tide::with_state(());
 
     // comment
-    server.at("/").get(index_page);
+    server.at("/").get(manage_page);
     server.at("/assert").serve_dir("assert").unwrap();
-    server.at("/:name").get(index_page);
+    server.at("/manage").get(manage_page);
 
-    block_on(server.listen("0.0.0.0:8080")).unwrap();
+    Ok(block_on(server.listen("0.0.0.0:8080"))?)
 }

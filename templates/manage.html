@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<p class="title is-5"><b>Danh sách thuốc</b></p>
+
+<form action="/manage/search" method="post">
+  <div class="field has-addons">
+    <div class="control">
+      <input class="input" type="text" placeholder="Nhập Mã, Tên thuốc" name="name">
+    </div>
+    <div class="control">
+      <div class="select">
+        <select>
+          <option>Loại thuốc</option>
+          <option>Thuoc</option>
+        </select>
+      </div>
+    </div>
+    <div class="control">
+      <button class="button is-info" type="submit">
+        Tìm
+      </button>
+    </div>
+  </div>
+</form>
+</br>
+<div class="table-container">
+<table class="table is-fullwidth is-hoverable is-bordered is-striped">
+  <thead>
+    <tr>
+      <th><abbr title="id">STT</abbr></th>
+      <th><abbr title="code">Ma thuoc</abbr></th>
+      <th><abbr title="name">Ten thuoc</abbr></th>
+      <th><abbr title="type">Loai thuoc</abbr></th>
+      <th><abbr title="price">Gia tien</abbr></th>
+      <th><abbr title="quantity">So luong</abbr></th>
+      <th><abbr title="import_date">Ngay nhap</abbr></th>
+      <th><abbr title="location">Vi tri</abbr></th>
+    </tr>
+  </thead>
+  <tbody>
+    {%for thuoc in danhsach%}
+    <tr>
+      <td>{{thuoc.id}}</td>
+      <td>{{thuoc.code}}</td>
+      <td>{{thuoc.name}}</td>
+      <td>{{thuoc.type}}</td>
+      <td>{{thuoc.price}}</td>
+      <td>{{thuoc.quantity}}</td>
+      <td>{{thuoc.import_date}}</td>
+      <td>{{thuoc.location}}</td>
+    </tr>
+    {%endfor%}
+  </tbody>
+</table>
+</div>
+{% endblock content %}
