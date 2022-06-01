@@ -41,11 +41,11 @@
 </head>
 
 <body>
-  <div class="columns">
+  <div class="columns is-gapless">
 
     <div class=" column is-2">
 
-      <div class="panel">
+      <div class="panel box" style="box-shadow: none;">
         <p class="panel-heading">
           WG2 Phamacy
         </p>
@@ -66,8 +66,8 @@
 
 
 
-    <div class="column" style="overflow: hidden">
-      <div class="navbar">
+    <div class="column" style="overflow: hidden; border-left: 1px #9d9d9d solid">
+      <div class="navbar" style="border-bottom: 1px #9d9d9d solid">
 
         <div class="navbar-brand">
           <div class="navbar-item">
@@ -85,7 +85,7 @@
 
       </div>
 
-      <div class="container" style="height: 100%;">
+      <div class="box container" style="height: 100%;">
         {% block content %}{% endblock %}
       </div>
     </div>
