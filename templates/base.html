@@ -40,15 +40,27 @@
   </style>
 </head>
 
-<body>
-  <div class="columns">
+<body style="height: 95vh">
+
+  <div class="navbar" style="border-bottom: 1px black solid;">
+    <div class="navbar-brand">
+      <div class="navbar-item">
+        <p class="subtitle"> Phamacy </p>
+      </div>
+    </div>
+    <div class="navbar-start"></div>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <a class="subtitle"> User </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="columns box">
 
     <div class=" column is-2">
 
       <div class="panel">
-        <p class="panel-heading">
-          WG2 Phamacy
-        </p>
         <a class="panel-block is-active">
           <span class="panel-icon">
             <i class="fas fa-book" aria-hidden="true"></i>
@@ -64,31 +76,13 @@
       </div>
     </div>
 
-
-
-    <div class="column" style="overflow: hidden">
-      <div class="navbar">
-
-        <div class="navbar-brand">
-          <div class="navbar-item">
-            <p class="subtitle"> Phamacy </p>
-          </div>
-        </div>
-
-        <div class="navbar-start"></div>
-
-        <div class="navbar-end">
-          <div class="navbar-item">
-            <a class="subtitle"> User </a>
-          </div>
-        </div>
-
-      </div>
+    <div class="column" style="border-left: 1px black solid">
 
       <div class="container" style="height: 100%;">
         {% block content %}{% endblock %}
       </div>
     </div>
+
   </div>
 
 </body>

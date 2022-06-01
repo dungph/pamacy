@@ -7,7 +7,7 @@ use tide_tera::TideTeraExt;
 
 static TERA: Lazy<Mutex<Tera>> = Lazy::new(|| Mutex::new(Tera::new("templates/*.html").unwrap()));
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug)]
 struct MedicineInfo {
     id: String,
     code: String,
