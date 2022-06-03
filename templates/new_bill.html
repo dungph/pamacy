@@ -30,7 +30,7 @@
 
     <div class="control">
       <div class="select">
-        <select>
+        <select name="bill_type">
           <option>Kê đơn</option>
           <option>Không kê đơn</option>
         </select>
@@ -41,29 +41,29 @@
       <label class="label">Ten KH:</label>
     </div>
     <div class="column is-3">
-      <input class="input" type="text" placeholder="{{bill_id}}" name="customer_name">
+      <input class="input" type="text" name="customer_name">
     </div>
 
     <div class="column is-1 ">
       <label class="label">SDT:</label>
     </div>
     <div class="column is-2">
-      <input class="input" type="text" placeholder="{{bill_id}}" name="customer_phone">
+      <input class="input" type="text" placeholder="0" name="customer_phone">
     </div>
 
     <div class="column is-1">
       <label class="label">Ngày sinh:</label>
     </div>
     <div class="column is-2">
-      <input class="input" type="text" placeholder="{{bill_id}}" name="bill_id">
+      <input class="input" type="date" name="bill_id">
     </div>
 
     <div class="control">
       <div class="select">
-        <select>
-          <option>Gioi tinh</option>
-          <option>Nam</option>
-          <option>Nu</option>
+        <select name="gender">
+          <option value="none">Gioi tinh</option>
+          <option value="male">Nam</option>
+          <option value="female">Nu</option>
         </select>
       </div>
     </div>
@@ -72,14 +72,14 @@
       <label class="label">Dia chi:</label>
     </div>
     <div class="column is-6">
-      <input class="input" type="text" placeholder="{{bill_id}}" name="customer_phone">
+      <input class="input" type="text" name="customer_phone">
     </div>
 
     <div class="column is-1 ">
       <label class="label">So CCCD:</label>
     </div>
     <div class="column is-2">
-      <input class="input" type="text" placeholder="{{bill_id}}" name="customer_phone">
+      <input class="input" type="text" name="customer_phone">
     </div>
 
     <table class="table is-fullwidth is-hoverable is-bordered is-striped" style="overflow: auto;">
