@@ -1,43 +1,69 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
 
-<div class="columns is-centered is-multiline">
-  <div class="column is-12"></div>
-  <div class="column is-5-tablet is-4-desktop is-3-widescreen">
-    <form action="/login" class="box" method="post">
-      <div class="field">
-        <label for="" class="label">Username</label>
-        <div class="control has-icons-left">
-          <input type="username" placeholder="bobsmith" class="input" required name="username">
-          <span class="icon is-small is-left">
-            <i class="fa fa-user"></i>
-          </span>
-        </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assert/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body
+  style="overflow: hidden; background: url(/assert/login_background.jpg); background-repeat: no-repeat; background-size: cover;">
+
+
+  <div class="hero is-fullheight " >
+    <div class="columns is-centered is-multiline hero-body ">
+      <div class="column is-6-tablet is-5-desktop is-4-widescreen">
+        <form action="/login" class="box" method="post" >
+          <div class="field">
+            <label for="" class="label">Username</label>
+            <div class="control has-icons-left">
+              <input type="username" placeholder="bobsmith" class="input" required name="username">
+              <span class="icon is-small is-left">
+                <i class="fa fa-user"></i>
+              </span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="" class="label">Password</label>
+            <div class="control has-icons-left">
+              <input type="password" placeholder="*******" class="input" required name="password">
+              <span class="icon is-small is-left">
+                <i class="fa fa-lock"></i>
+              </span>
+            </div>
+          </div>
+          {% if msg is defined %}
+          <div class="field has-text-danger">
+            <label for="">
+              {{msg}}
+            </label>
+          </div>
+          {% else %}
+          {% endif %}
+          <div class="field ">
+            <div class="level">
+              <div class="level-left">
+
+              </div>
+              <div class="level-right">
+                <button class="button is-success mt-2" type="submit" name="submit" value="login">
+              Login
+            </button>
+              </div>
+               
+            </div>
+           
+          </div>
+        </form>
       </div>
-      <div class="field">
-        <label for="" class="label">Password</label>
-        <div class="control has-icons-left">
-          <input type="password" placeholder="*******" class="input" required name="password">
-          <span class="icon is-small is-left">
-            <i class="fa fa-lock"></i>
-          </span>
-        </div>
-      </div>
-      {% if msg is defined %}
-      <div class="field has-text-danger">
-        <label for="">
-          {{msg}}
-        </label>
-      </div>
-      {% else %}
-      {% endif %}
-      <div class="field">
-        <button class="button is-success" type="submit" name="submit" value="login">
-          Login
-        </button>
-      </div>
-    </form>
+    </div>
   </div>
-</div>
 
-{% endblock content %}
+</body>
+
+</html>
