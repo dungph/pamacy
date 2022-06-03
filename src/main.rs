@@ -109,15 +109,15 @@ async fn statistic(req: Request<()>) -> Result<Response> {
     tera.render_response("statistic.html", &context)
 }
 async fn index(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = Context::new();
+    if req.ext::<Username>().is_some() {
+        Ok(Redirect::new("/manage").into())
+    } else {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
+        let mut context = Context::new();
 
-    req.query::<HashMap<String, String>>()?
-        .iter()
-        .for_each(|(key, val)| context.insert(key, val));
-
-    tera.render_response("index.html", &context)
+        tera.render_response("index.html", &context)
+    }
 }
 
 async fn login(mut req: Request<()>) -> Result<Response> {
@@ -144,18 +144,22 @@ async fn login(mut req: Request<()>) -> Result<Response> {
                     .lock()
                     .await
                     .insert(random_string.clone(), Username(username));
-                let mut res = Response::builder(200).build();
+                let mut res: Response = Redirect::new("/manage").into();
                 res.insert_cookie(Cookie::new("login", random_string));
                 Ok(res)
             } else {
-                Ok(Redirect::new("/?msg=Wrong+username+or+password").into())
+                let mut tera = TERA.lock().await;
+                tera.full_reload()?;
+                let mut context = Context::new();
+                context.insert("msg", "Wrong username or password");
+                tera.render_response("index.html", &context)
             }
         }
         Session::Logout { username } => {
             if let Some(cookie) = req.cookie("login") {
                 COOKIES.lock().await.remove(cookie.value());
             }
-            Ok(Response::builder(200).build())
+            Ok(Redirect::new("/").into())
         }
         _ => Ok(Response::builder(404).build()),
     }
