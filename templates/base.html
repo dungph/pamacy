@@ -35,8 +35,6 @@
       margin: 2rem;
       height: 250px;
     }
-
-    .table &.is-scrollable tbody overflow-y: scroll width: auto position: absolute
   </style>
 </head>
 
@@ -45,17 +43,41 @@
 
     <div class=" column is-2">
 
-      <div class="panel box" style="box-shadow: none;">
+      <div class="panel box is-info" style="box-shadow: none;">
         <p class="panel-heading">
-          WG2 Phamacy
+          Menu
         </p>
-        <a class="panel-block is-active">
+        <a class="panel-block is-active" href="/new_bill">
+          <span class="panel-icon">
+            <i class="fas fa-book" aria-hidden="true"></i>
+          </span>
+          Tạo hóa đơn
+        </a>
+        <a class="panel-block " href="/manage">
           <span class="panel-icon">
             <i class="fas fa-book" aria-hidden="true"></i>
           </span>
           Quản lý thuốc
         </a>
-        <a class="panel-block">
+        <a class="panel-block " href="/manage">
+          <span class="panel-icon">
+            <i class="fas fa-book" aria-hidden="true"></i>
+          </span>
+          Nhân viên
+        </a>
+        <a class="panel-block " href="/manage">
+          <span class="panel-icon">
+            <i class="fas fa-book" aria-hidden="true"></i>
+          </span>
+          Tài chính
+        </a>
+        <a class="panel-block " href="/manage">
+          <span class="panel-icon">
+            <i class="fas fa-book" aria-hidden="true"></i>
+          </span>
+          Khách hàng
+        </a>
+        <a class="panel-block" href="/statistic">
           <span class="panel-icon">
             <i class="fas fa-chart-line" aria-hidden="true"></i>
           </span>
@@ -66,8 +88,8 @@
 
 
 
-    <div class="column" style="overflow: hidden; border-left: 1px #9d9d9d solid">
-      <div class="navbar" style="border-bottom: 1px #9d9d9d solid">
+    <div class="column" style="overflow: auto; border-left: 1px #9d9d9d solid">
+      <div class="navbar" style="border-bottom: 1px #9d9d9d solid; position: sticky; top: 0;">
 
         <div class="navbar-brand">
           <div class="navbar-item">
@@ -85,7 +107,7 @@
 
       </div>
 
-      <div class="box container" style="height: 100%;">
+      <div class="box container" style="height: 92%;">
         {% block content %}{% endblock %}
       </div>
     </div>

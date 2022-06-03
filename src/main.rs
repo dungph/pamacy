@@ -18,7 +18,6 @@ struct MedicineInfo {
     import_date: String,
     location: String,
 }
-
 async fn manage_page(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
@@ -36,8 +35,30 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         location: "Location".into(),
     };
 
-    context.insert("danhsach", &[&val; 10]);
+    context.insert("danhsach", &[&val; 20]);
     tera.render_response("manage.html", &context)
+}
+
+async fn new_bill(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+
+    let mut context = Context::new();
+
+    let val = MedicineInfo {
+        id: 1.to_string(),
+        code: "fads".into(),
+        name: "Name".into(),
+        r#type: "Name".into(),
+        price: 12,
+        quantity: 12,
+        import_date: "date".into(),
+        location: "Location".into(),
+    };
+
+    context.insert("danhsach", &[&val; 20]);
+    context.insert("bill_id", "123");
+    tera.render_response("new_bill.html", &context)
 }
 
 fn main() -> anyhow::Result<()> {
@@ -50,6 +71,7 @@ fn main() -> anyhow::Result<()> {
     server.at("/").get(manage_page);
     server.at("/assert").serve_dir("assert").unwrap();
     server.at("/manage").get(manage_page);
+    server.at("/new_bill").get(new_bill);
 
     Ok(block_on(server.listen("0.0.0.0:8080"))?)
 }

@@ -25,33 +25,33 @@
 </form>
 </br>
 <div class="table-container" style="height:60%; overflow: scroll">
-<table class="table is-fullwidth is-hoverable is-bordered is-striped is-scrollable">
-  <thead class="has-background-info" style="position: sticky; top: 0;">
-    <tr>
-      <th><abbr title="id">STT</abbr></th>
-      <th><abbr title="code">Ma thuoc</abbr></th>
-      <th><abbr title="name">Ten thuoc</abbr></th>
-      <th><abbr title="type">Loai thuoc</abbr></th>
-      <th><abbr title="price">Gia tien</abbr></th>
-      <th><abbr title="quantity">So luong</abbr></th>
-      <th><abbr title="import_date">Ngay nhap</abbr></th>
-      <th><abbr title="location">Vi tri</abbr></th>
-    </tr>
-  </thead>
-  <tbody>
-    {%for thuoc in danhsach%}
-    <tr>
-      <td>{{thuoc.id}}</td>
-      <td>{{thuoc.code}}</td>
-      <td>{{thuoc.name}}</td>
-      <td>{{thuoc.type}}</td>
-      <td>{{thuoc.price}}</td>
-      <td>{{thuoc.quantity}}</td>
-      <td>{{thuoc.import_date}}</td>
-      <td>{{thuoc.location}}</td>
-    </tr>
-    {%endfor%}
-  </tbody>
-</table>
+  <table class="table is-fullwidth is-hoverable is-bordered is-striped">
+    <thead class="has-background-light" style="position: sticky; top: 0;">
+      <tr>
+        <th><abbr title="id">STT</abbr></th>
+        <th><abbr title="code">Ma thuoc</abbr></th>
+        <th><abbr title="name">Ten thuoc</abbr></th>
+        <th><abbr title="type">Loai thuoc</abbr></th>
+        <th><abbr title="price">Gia tien</abbr></th>
+        <th><abbr title="quantity">So luong</abbr></th>
+        <th><abbr title="import_date">Ngay nhap</abbr></th>
+        <th><abbr title="location">Vi tri</abbr></th>
+      </tr>
+    </thead>
+    <tbody>
+      {%for thuoc in danhsach%}
+      <tr>
+        <td>{{thuoc.id}}</td>
+        <td>{{thuoc.code}}</td>
+        <td>{{thuoc.name}}</td>
+        <td>{{thuoc.type}}</td>
+        <td>{{thuoc.price}}</td>
+        <td>{{thuoc.quantity}}</td>
+        <td>{{thuoc.import_date}}</td>
+        <td>{{thuoc.location}}</td>
+      </tr>
+      {%endfor%}
+    </tbody>
+  </table>
 </div>
 {% endblock content %}
