@@ -1,14 +1,11 @@
 use std::collections::HashMap;
 
 use async_std::{sync::Mutex, task::block_on};
+use chrono::{DateTime, Utc};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
-use tide::{
-    http::{Cookie, Url},
-    utils::Before,
-    Redirect, Request, Response, Result,
-};
+use tide::{http::Cookie, utils::Before, Redirect, Request, Response, Result};
 use tide_tera::TideTeraExt;
 
 static TERA: Lazy<Mutex<Tera>> = Lazy::new(|| Mutex::new(Tera::new("templates/*.html").unwrap()));
@@ -23,12 +20,15 @@ static LOGIN_CREDENTAL: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| {
         [("admin".to_owned(), "admin".to_owned())].into_iter(),
     ))
 });
+
 fn base_context(username: Option<&str>) -> Context {
     let mut context = Context::new();
-
     context.insert("username", &username);
-    return context;
+    context.insert("current_time", &Utc::now().to_rfc3339());
+
+    context
 }
+
 #[derive(Serialize, Debug, Clone)]
 struct MedicineInfo {
     id: String,
