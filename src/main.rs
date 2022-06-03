@@ -61,6 +61,36 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
     tera.render_response("new_bill.html", &context)
 }
 
+async fn staff(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+    let mut context = Context::new();
+    tera.render_response("staff.html", &context)
+}
+async fn bills(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+    let mut context = Context::new();
+    tera.render_response("bills.html", &context)
+}
+async fn finance(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+    let mut context = Context::new();
+    tera.render_response("finance.html", &context)
+}
+async fn customer(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+    let mut context = Context::new();
+    tera.render_response("customer_info.html", &context)
+}
+async fn statistic(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+    let mut context = Context::new();
+    tera.render_response("statistic.html", &context)
+}
 fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
     tide::log::start();
@@ -70,8 +100,14 @@ fn main() -> anyhow::Result<()> {
     // comment
     server.at("/").get(manage_page);
     server.at("/assert").serve_dir("assert").unwrap();
-    server.at("/manage").get(manage_page);
+
     server.at("/new_bill").get(new_bill);
+    server.at("/manage").get(manage_page);
+    server.at("/staff").get(staff);
+    server.at("/bills").get(bills);
+    server.at("/finance").get(finance);
+    server.at("/customer").get(customer);
+    server.at("/statistic").get(statistic);
 
     Ok(block_on(server.listen("0.0.0.0:8080"))?)
 }
