@@ -96,15 +96,30 @@
             <a href="/" class="subtitle"> Phamacy </a>
           </div>
         </div>
+        <div class="navbar-menu">
+          <div class="navbar-start"></div>
 
-        <div class="navbar-start"></div>
+          <div class="navbar-end">
+            {% if username is defined %}
 
-        <div class="navbar-end">
-          <div class="navbar-item">
-            <a class="subtitle"> User </a>
+            <form action="/login" method="post">
+              <div class="field is-horizontal">
+                <input type="hidden" name="username" value="{{username}}" class="navbar-item">
+
+                <div class="navbar-item">
+                <a class="subtitle navbar-item"> {{username}} </a>
+                </div>
+                <div class="navbar-item">
+                  <button placeholder="bobsmith" class="button" required name="submit" value="logout">
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </form>
+            {% else %}
+            {% endif %}
           </div>
         </div>
-
       </div>
 
       <div class="box container" style="height: 92%;">

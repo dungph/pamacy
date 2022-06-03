@@ -23,7 +23,12 @@ static LOGIN_CREDENTAL: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| {
         [("admin".to_owned(), "admin".to_owned())].into_iter(),
     ))
 });
+fn base_context(username: Option<&str>) -> Context {
+    let mut context = Context::new();
 
+    context.insert("username", &username);
+    return context;
+}
 #[derive(Serialize, Debug, Clone)]
 struct MedicineInfo {
     id: String,
@@ -36,77 +41,105 @@ struct MedicineInfo {
     location: String,
 }
 async fn manage_page(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
+    if let Some(Username(s)) = req.ext() {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
 
-    let mut context = Context::new();
+        let mut context = base_context(Some(s));
 
-    let val = MedicineInfo {
-        id: 1.to_string(),
-        code: "fads".into(),
-        name: "Name".into(),
-        r#type: "Name".into(),
-        price: 12,
-        quantity: 12,
-        import_date: "date".into(),
-        location: "Location".into(),
-    };
+        let val = MedicineInfo {
+            id: 1.to_string(),
+            code: "fads".into(),
+            name: "Name".into(),
+            r#type: "Name".into(),
+            price: 12,
+            quantity: 12,
+            import_date: "date".into(),
+            location: "Location".into(),
+        };
 
-    context.insert("danhsach", &[&val; 20]);
-    tera.render_response("manage.html", &context)
+        context.insert("danhsach", &[&val; 20]);
+        tera.render_response("manage.html", &context)
+    } else {
+        Ok(Redirect::new("/").into())
+    }
 }
 
 async fn new_bill(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
+    if let Some(Username(s)) = req.ext() {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
 
-    let mut context = Context::new();
+        let mut context = base_context(Some(s));
 
-    let val = MedicineInfo {
-        id: 1.to_string(),
-        code: "fads".into(),
-        name: "Name".into(),
-        r#type: "Name".into(),
-        price: 12,
-        quantity: 12,
-        import_date: "date".into(),
-        location: "Location".into(),
-    };
+        let val = MedicineInfo {
+            id: 1.to_string(),
+            code: "fads".into(),
+            name: "Name".into(),
+            r#type: "Name".into(),
+            price: 12,
+            quantity: 12,
+            import_date: "date".into(),
+            location: "Location".into(),
+        };
 
-    context.insert("danhsach", &[&val; 20]);
-    context.insert("bill_id", "123");
-    tera.render_response("new_bill.html", &context)
+        context.insert("danhsach", &[&val; 20]);
+        context.insert("bill_id", "123");
+        tera.render_response("new_bill.html", &context)
+    } else {
+        Ok(Redirect::new("/").into())
+    }
 }
 
 async fn staff(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = Context::new();
-    tera.render_response("staff.html", &context)
+    if let Some(Username(s)) = req.ext() {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
+        let mut context = base_context(Some(s));
+        tera.render_response("staff.html", &context)
+    } else {
+        Ok(Redirect::new("/").into())
+    }
 }
 async fn bills(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = Context::new();
-    tera.render_response("bills.html", &context)
+    if let Some(Username(s)) = req.ext() {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
+        let mut context = base_context(Some(s));
+        tera.render_response("bills.html", &context)
+    } else {
+        Ok(Redirect::new("/").into())
+    }
 }
 async fn finance(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = Context::new();
-    tera.render_response("finance.html", &context)
+    if let Some(Username(s)) = req.ext() {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
+        let mut context = base_context(Some(s));
+        tera.render_response("finance.html", &context)
+    } else {
+        Ok(Redirect::new("/").into())
+    }
 }
 async fn customer(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = Context::new();
-    tera.render_response("customer_info.html", &context)
+    if let Some(Username(s)) = req.ext() {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
+        let mut context = base_context(Some(s));
+        tera.render_response("customer_info.html", &context)
+    } else {
+        Ok(Redirect::new("/").into())
+    }
 }
 async fn statistic(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = Context::new();
-    tera.render_response("statistic.html", &context)
+    if let Some(Username(s)) = req.ext() {
+        let mut tera = TERA.lock().await;
+        tera.full_reload()?;
+        let mut context = base_context(Some(s));
+        tera.render_response("statistic.html", &context)
+    } else {
+        Ok(Redirect::new("/").into())
+    }
 }
 async fn index(req: Request<()>) -> Result<Response> {
     if req.ext::<Username>().is_some() {
