@@ -1,11 +1,28 @@
+use std::collections::HashMap;
+
 use async_std::{sync::Mutex, task::block_on};
 use once_cell::sync::Lazy;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
-use tide::{Request, Response, Result};
+use tide::{
+    http::{Cookie, Url},
+    utils::Before,
+    Redirect, Request, Response, Result,
+};
 use tide_tera::TideTeraExt;
 
 static TERA: Lazy<Mutex<Tera>> = Lazy::new(|| Mutex::new(Tera::new("templates/*.html").unwrap()));
+
+#[derive(Clone)]
+struct Username(String);
+
+static COOKIES: Lazy<Mutex<HashMap<String, Username>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+static LOGIN_CREDENTAL: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| {
+    Mutex::new(HashMap::from_iter(
+        [("admin".to_owned(), "admin".to_owned())].into_iter(),
+    ))
+});
 
 #[derive(Serialize, Debug, Clone)]
 struct MedicineInfo {
@@ -91,14 +108,75 @@ async fn statistic(req: Request<()>) -> Result<Response> {
     let mut context = Context::new();
     tera.render_response("statistic.html", &context)
 }
+async fn index(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+    let mut context = Context::new();
+
+    req.query::<HashMap<String, String>>()?
+        .iter()
+        .for_each(|(key, val)| context.insert(key, val));
+
+    tera.render_response("index.html", &context)
+}
+
+async fn login(mut req: Request<()>) -> Result<Response> {
+    #[derive(Deserialize, Debug)]
+    #[serde(tag = "submit")]
+    #[serde(rename_all = "lowercase")]
+    enum Session {
+        Login { username: String, password: String },
+        Logout { username: String },
+    }
+    let form: Session = req.body_form().await?;
+    match form {
+        Session::Login { username, password } => {
+            if LOGIN_CREDENTAL
+                .lock()
+                .await
+                .get(username.as_str())
+                .map(|s| s.as_str())
+                .unwrap_or_else(|| "")
+                .eq(password.as_str())
+            {
+                let random_string = base64::encode(rand::random::<[u8; 32]>());
+                COOKIES
+                    .lock()
+                    .await
+                    .insert(random_string.clone(), Username(username));
+                let mut res = Response::builder(200).build();
+                res.insert_cookie(Cookie::new("login", random_string));
+                Ok(res)
+            } else {
+                Ok(Redirect::new("/?msg=Wrong+username+or+password").into())
+            }
+        }
+        Session::Logout { username } => {
+            if let Some(cookie) = req.cookie("login") {
+                COOKIES.lock().await.remove(cookie.value());
+            }
+            Ok(Response::builder(200).build())
+        }
+        _ => Ok(Response::builder(404).build()),
+    }
+}
 fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
     tide::log::start();
 
     let mut server = tide::with_state(());
 
+    server.with(Before(|mut request: Request<()>| async {
+        if let Some(cookie) = request.cookie("login") {
+            if let Some(username) = COOKIES.lock().await.get(cookie.value()).cloned() {
+                request.set_ext(username);
+            }
+        }
+        request
+    }));
     // comment
-    server.at("/").get(manage_page);
+    server.at("/").get(index);
+    server.at("/login").post(login);
     server.at("/assert").serve_dir("assert").unwrap();
 
     server.at("/new_bill").get(new_bill);

@@ -15,3 +15,5 @@ sqlx = {version = "0.5.13", features = ["runtime-async-std-rustls", "postgres"]}
 anyhow = "1.0.57"
 dotenv = "0.15.0"
 serde = "1.0.137"
+rand = "0.8.5"
+base64 = "0.13.0"

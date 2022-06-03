@@ -1338,8 +1338,10 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "async-std",
+ "base64 0.13.0",
  "dotenv",
  "once_cell",
+ "rand 0.8.5",
  "serde",
  "sqlx",
  "tera",

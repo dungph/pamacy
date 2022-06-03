@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="columns is-centered is-multiline">
+  <div class="column is-12"></div>
+  <div class="column is-5-tablet is-4-desktop is-3-widescreen">
+    <form action="/login" class="box" method="post">
+      <div class="field">
+        <label for="" class="label">Username</label>
+        <div class="control has-icons-left">
+          <input type="username" placeholder="bobsmith" class="input" required name="username">
+          <span class="icon is-small is-left">
+            <i class="fa fa-user"></i>
+          </span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="" class="label">Password</label>
+        <div class="control has-icons-left">
+          <input type="password" placeholder="*******" class="input" required name="password">
+          <span class="icon is-small is-left">
+            <i class="fa fa-lock"></i>
+          </span>
+        </div>
+      </div>
+      {% if msg is defined %}
+      <div class="field has-text-danger">
+        <label for="">
+          {{msg}}
+        </label>
+      </div>
+      {% else %}
+      {% endif %}
+      <div class="field">
+        <button class="button is-success" type="submit" name="submit" value="login">
+          Login
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock content %}
