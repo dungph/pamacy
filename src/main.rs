@@ -1,3 +1,4 @@
+mod database;
 use std::collections::HashMap;
 
 use async_std::{sync::Mutex, task::block_on};
@@ -5,7 +6,7 @@ use chrono::{DateTime, Utc};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
-use tide::{http::Cookie, utils::Before, Middleware, Redirect, Request, Response, Result};
+use tide::{Middleware, Redirect, Request, Response, Result};
 use tide_tera::TideTeraExt;
 
 static TERA: Lazy<Mutex<Tera>> = Lazy::new(|| Mutex::new(Tera::new("templates/*.html").unwrap()));
