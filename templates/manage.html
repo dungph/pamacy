@@ -2,50 +2,61 @@
 {% block content %}
 
 <p class="title is-5"><b>Danh sách thuốc</b></p>
+<div class="level">
+  <div class="level-left">
+    <form action="" method="get">
+      <div class="field has-addons">
+        <div class="control">
+          <input class="input" type="text" placeholder="Nhập Mã, Tên thuốc" name="name">
+        </div>
+        <div class="control">
+          <div class="select">
+            <select>
+              <option>Loại thuốc</option>
+              <option>Thuốc kháng sinh</option>
+              <option>Thuốc kháng viêm </option>
+              <option>Thuốc đau hạ sốt</option>
+              <option>Thuốc kháng virus</option>
+              <option>Nhóm trị giun</option>
+              <option>Nhóm dạ dày</option>
+              <option>Tuýp bôi ngòa da</option>
+            </select>
+          </div>
+        </div>
 
-<form action="" method="get">
-  <div class="field has-addons">
-    <div class="control">
-      <input class="input" type="text" placeholder="Nhập Mã, Tên thuốc" name="name">
-    </div>
-    <div class="control">
-      <div class="select">
-        <select>
-          <option>Loại thuốc</option>
-          <option>Thuốc kháng sinh</option>
-          <option>Thuốc kháng viêm </option>
-          <option>Thuốc đau hạ sốt</option>
-          <option>Thuốc kháng virus</option>
-          <option>Nhóm trị giun</option>
-          <option>Nhóm dạ dày</option>
-          <option>Tuýp bôi ngòa da</option>
-        </select>
+        <div class="control">
+          <button class="button is-info p*-1" type="submit">
+            Tìm
+          </button>
+
+        </div>
+
       </div>
-    </div>
-
-    <div class="control">
-      <button class="button is-info p*-1" type="submit">
-        Tìm
-      </button>
-      <button class="button is-info p*-1" type="submit">
-        Thêm thuốc
-      </button>
-    </div>
+    </form>
   </div>
-</form>
+  <div class="level-left">
+    <button class="js-modal-trigger button is-info p*-1" data-target="modal-js-example">
+      Thêm Thuốc
+    </button>
+  </div>
+</div>
+
+
 </br>
-<div class="table-container" style="height:60%; overflow: scroll">
+<div class="table-container" style="height:80%; overflow: scroll">
   <table class="table is-fullwidth is-hoverable is-bordered is-striped">
     <thead class="has-background-light" style="position: sticky; top: 0;">
-      <tr>
-        <th><abbr title="id">STT</abbr></th>
-        <th><abbr title="code">Ma thuoc</abbr></th>
-        <th><abbr title="name">Ten thuoc</abbr></th>
-        <th><abbr title="type">Loai thuoc</abbr></th>
-        <th><abbr title="price">Gia tien</abbr></th>
-        <th><abbr title="quantity">So luong</abbr></th>
-        <th><abbr title="import_date">Ngay nhap</abbr></th>
-        <th><abbr title="location">Vi tri</abbr></th>
+      <tr >
+        <th><abbr title="id" >STT
+
+          </abbr></th>
+        <th><abbr title="code" style="text-decoration: none;">Mã thuốc</abbr></th>
+        <th><abbr title="name" style="text-decoration: none;">Tên thuốc</abbr></th>
+        <th><abbr title="type" style="text-decoration: none;">Loại thuốc</abbr></th>
+        <th><abbr title="price" style="text-decoration: none;">Giá tiền</abbr></th>
+        <th><abbr title="quantity" style="text-decoration: none;">Số lượng</abbr></th>
+        <th><abbr title="import_date" style="text-decoration: none;">Ngày nhập</abbr></th>
+        <th><abbr title="location" style="text-decoration: none;">Vị trí</abbr></th>
       </tr>
     </thead>
     <tbody>
@@ -61,7 +72,217 @@
         <td>{{thuoc.location}}</td>
       </tr>
       {%endfor%}
+
     </tbody>
   </table>
 </div>
+<!-- modal thêm thuốc  -->
+<div class="modal" id="modal-js-example">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Bảng thêm thuốc</p>
+      <button class="delete" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+
+      <div class="field">
+        <label class="label">Mã thuốc</label>
+        <div class="control">
+          <input class="input" type="text" placeholder="Nhập mã thuốc">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Tên thuốc</label>
+        <div class="control">
+          <input class="input" type="text" placeholder="Nhập tên thuốc">
+        </div>
+      </div>
+
+      <div class="level">
+        <div class="level-left">
+          <div class="field">
+            <label class="label">Giá tiền</label>
+            <div class="control">
+              <input class="input" type="number" placeholder="Giá tiền">
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="field pr-6" style="  margin-right: 120px;">
+            <label class="label">Loại thuốc</label>
+            <div class="control">
+              <div class="select">
+                <select>
+                  <option>Loại thuốc</option>
+                  <option>Thuốc kháng sinh</option>
+                  <option>Thuốc kháng viêm </option>
+                  <option>Thuốc đau hạ sốt</option>
+                  <option>Thuốc kháng virus</option>
+                  <option>Nhóm trị giun</option>
+                  <option>Nhóm dạ dày</option>
+                  <option>Tuýp bôi ngòa da</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="level">
+        <div class="level-left">
+          <div class="field">
+            <label class="label">Số lượng</label>
+            <div class="control">
+              <input class="input" type="number" placeholder="Nhập số lượng">
+            </div>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="field pr-6" style="margin-right: 142px;">
+            <label class="label">Ngày hết hạn</label>
+            <div class="control">
+              <input class="input" type="date" placeholder="Ngày hết hạn">
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="field">
+        <label class="label">Vị trí </label>
+        <div class="control">
+          <input class="input" type="text" placeholder="Nhập vị trí">
+        </div>
+      </div>
+      <!-- <div class="field">
+        <label class="label">Mã thu</label>
+        <div class="control has-icons-left has-icons-right">
+          <input class="input is-success" type="text" placeholder="Text input" value="bulma">
+          <span class="icon is-small is-left">
+            <i class="fas fa-user"></i>
+          </span>
+          <span class="icon is-small is-right">
+            <i class="fas fa-check"></i>
+          </span>
+        </div>
+        <p class="help is-success">This username is available</p>
+      </div>
+      
+      <div class="field">
+        <label class="label">Email</label>
+        <div class="control has-icons-left has-icons-right">
+          <input class="input is-danger" type="email" placeholder="Email input" value="hello@">
+          <span class="icon is-small is-left">
+            <i class="fas fa-envelope"></i>
+          </span>
+          <span class="icon is-small is-right">
+            <i class="fas fa-exclamation-triangle"></i>
+          </span>
+        </div>
+        <p class="help is-danger">This email is invalid</p>
+      </div>
+      
+      <div class="field">
+        <label class="label">Subject</label>
+        <div class="control">
+          <div class="select">
+            <select>
+              <option>Select dropdown</option>
+              <option>With options</option>
+            </select>
+          </div>
+        </div> -->
+      <!-- </div>
+      
+      <div class="field">
+        <label class="label">Message</label>
+        <div class="control">
+          <textarea class="textarea" placeholder="Textarea"></textarea>
+        </div>
+      </div>
+      
+      <div class="field">
+        <div class="control">
+          <label class="checkbox">
+            <input type="checkbox">
+            I agree to the <a href="#">terms and conditions</a>
+          </label>
+        </div>
+      </div>
+      
+      <div class="field">
+        <div class="control">
+          <label class="radio">
+            <input type="radio" name="question">
+            Yes
+          </label>
+          <label class="radio">
+            <input type="radio" name="question">
+            No
+          </label>
+        </div>
+      </div> -->
+
+
+    </section>
+    <footer class="modal-card-foot">
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-link">Thêm thuốc</button>
+        </div>
+        <div class="control">
+          <button class="button is-link is-light">Hủy</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+<!-- sự kiện nút thên thuốc -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Functions to open and close a modal
+    function openModal($el) {
+      $el.classList.add('is-active');
+    }
+
+    function closeModal($el) {
+      $el.classList.remove('is-active');
+    }
+
+    function closeAllModals() {
+      (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+        closeModal($modal);
+      });
+    }
+
+    // Add a click event on buttons to open a specific modal
+    (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+      const modal = $trigger.dataset.target;
+      const $target = document.getElementById(modal);
+
+      $trigger.addEventListener('click', () => {
+        openModal($target);
+      });
+    });
+
+    // Add a click event on various child elements to close the parent modal
+    (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+      const $target = $close.closest('.modal');
+
+      $close.addEventListener('click', () => {
+        closeModal($target);
+      });
+    });
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+      const e = event || window.event;
+
+      if (e.keyCode === 27) { // Escape key
+        closeAllModals();
+      }
+    });
+  });
+</script>
 {% endblock content %}
