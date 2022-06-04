@@ -41,27 +41,27 @@
       <label class="label">Ten KH:</label>
     </div>
     <div class="column is-3">
-      <input class="input" type="text" name="customer_name">
+      <input class="input" type="text" name="customer_name" placeholder="Nhập tên khách hàng">
     </div>
 
     <div class="column is-1 ">
       <label class="label">SDT:</label>
     </div>
     <div class="column is-2">
-      <input class="input" type="text" placeholder="0" name="customer_phone">
+      <input class="input" type="text" placeholder="Nhập số điện thoại" name="customer_phone">
     </div>
 
     <div class="column is-1">
       <label class="label">Ngày sinh:</label>
     </div>
     <div class="column is-2">
-      <input class="input" type="date" name="bill_id">
+      <input class="input" type="date" name="bill_id" placeholder="Nhập ngày sinh">
     </div>
 
     <div class="control">
       <div class="select">
         <select name="gender">
-          <option value="none">Gioi tinh</option>
+          <option value="none">Chọn giới tính</option>
           <option value="male">Nam</option>
           <option value="female">Nu</option>
         </select>
@@ -72,7 +72,7 @@
       <label class="label">Dia chi:</label>
     </div>
     <div class="column is-6">
-      <input class="input" type="text" name="customer_phone">
+      <input class="input" type="text" name="customer_phone" placeholder="Nhập địa chỉ thường trú">
     </div>
 
     <div class="column is-1 ">
@@ -81,18 +81,22 @@
     <div class="column is-2">
       <input class="input" type="text" name="customer_phone">
     </div>
-
-    <table class="table is-fullwidth is-hoverable is-bordered is-striped" style="overflow: auto;">
-      <thead class="has-background-light">
+    <button class="js-modal-trigger button is-info " data-target="modal-js-example">
+      Tạo hóa đơn
+    </button>
+  </div>
+  <div class="table-container" style="overflow: scroll; height: 400px;">
+    <table class="table is-fullwidth is-hoverable is-bordered is-striped">
+      <thead class="has-background-light" style="position: sticky; top: 0;">
         <tr>
           <th><abbr title="id">STT</abbr></th>
-          <th><abbr title="code">Ma thuoc</abbr></th>
-          <th><abbr title="name">Ten thuoc</abbr></th>
-          <th><abbr title="type">Loai thuoc</abbr></th>
-          <th><abbr title="price">Gia tien</abbr></th>
-          <th><abbr title="quantity">So luong</abbr></th>
-          <th><abbr title="import_date">Ngay nhap</abbr></th>
-          <th><abbr title="location">Vi tri</abbr></th>
+          <th><abbr title="code">Mã thuốc</abbr></th>
+          <th><abbr title="name">Tên thuốc</abbr></th>
+          <th><abbr title="type">Loại thuốc</abbr></th>
+          <th><abbr title="price">Gía tiền</abbr></th>
+          <th><abbr title="quantity">Số lượng</abbr></th>
+          <th><abbr title="import_date">Ngày Nhập</abbr></th>
+          <th><abbr title="location">Vị Trí </abbr></th>
         </tr>
       </thead>
       <tbody>
@@ -108,7 +112,7 @@
           <td>{{thuoc.location}}</td>
         </tr>
         {%endfor%}
-        
+
       </tbody>
     </table>
   </div>
