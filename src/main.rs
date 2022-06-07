@@ -65,30 +65,56 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
 
     let mut context = base_context(&req);
 
-    let val = MedicineInfo {
-        id: 1.to_string(),
-        code: "fads".into(),
-        name: "Name".into(),
-        r#type: "Name".into(),
-        price: 12,
-        quantity: 12,
-        import_date: "date".into(),
-        location: "Location".into(),
-    };
+    #[derive(Serialize, Debug)]
+    struct ManageMedicineTemplate {
+        medicine_id: String,
+        medicine_quantity: String,
+        medicine_code: String,
+        medicine_name: String,
+        medicine_type: String,
+        medicine_price: String,
+        medicine_location: String,
+    }
 
     let query = req.query::<HashMap<String, String>>()?;
-    if query.get("submit") == Some(&String::from("find")) {
-        let name = query.get("name");
-        let list =
-            database::find_drug_match_any(name.cloned(), name.cloned(), name.cloned()).await?;
 
-        context.insert("list", &list);
-    } else {
-        let mut all_drug = database::list_drug().await?;
-        all_drug.sort_by(|a, b| a.medicine_id.cmp(&b.medicine_id));
-        context.insert("list", &all_drug);
-    }
-    context.insert("danhsach", &[&val; 20]);
+    let display: Vec<ManageMedicineTemplate> = match query.get("submit").map(|s| s.as_str()) {
+        Some("find") => {
+            let name = query.get("name");
+            let list =
+                database::find_drug_match_any(name.cloned(), name.cloned(), name.cloned()).await?;
+            context.insert("list", &list);
+            list.iter()
+                .map(|v| ManageMedicineTemplate {
+                    medicine_id: v.medicine_id.to_string(),
+                    medicine_quantity: v.medicine_quantity.to_string(),
+                    medicine_code: v.medicine_code.to_string(),
+                    medicine_name: v.medicine_name.to_string(),
+                    medicine_type: v.medicine_type.to_string(),
+                    medicine_price: v.medicine_price.to_string(),
+                    medicine_location: v.medicine_location.to_string(),
+                })
+                .collect()
+        }
+        _ => {
+            let mut all_drug = database::list_drug().await?;
+            all_drug.sort_by(|a, b| a.medicine_id.cmp(&b.medicine_id));
+            context.insert("list", &all_drug);
+            all_drug
+                .iter()
+                .map(|v| ManageMedicineTemplate {
+                    medicine_id: v.medicine_id.to_string(),
+                    medicine_quantity: v.medicine_quantity.to_string(),
+                    medicine_code: v.medicine_code.to_string(),
+                    medicine_name: v.medicine_name.to_string(),
+                    medicine_type: v.medicine_type.to_string(),
+                    medicine_price: v.medicine_price.to_string(),
+                    medicine_location: v.medicine_location.to_string(),
+                })
+                .collect()
+        }
+    };
+    context.insert("display", &display);
     tera.render_response("manage.html", &context)
 }
 

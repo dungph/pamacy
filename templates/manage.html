@@ -55,12 +55,11 @@
         <th><abbr title="type" style="text-decoration: none;">Loại thuốc</abbr></th>
         <th><abbr title="price" style="text-decoration: none;">Giá tiền</abbr></th>
         <th><abbr title="quantity" style="text-decoration: none;">Số lượng</abbr></th>
-        <th><abbr title="import_date" style="text-decoration: none;">Ngày nhập</abbr></th>
         <th><abbr title="location" style="text-decoration: none;">Vị trí</abbr></th>
       </tr>
     </thead>
     <tbody>
-      {%for thuoc in list%}
+      {%for thuoc in display%}
       <tr>
         <td>{{thuoc.medicine_id}}</td>
         <td>{{thuoc.medicine_code}}</td>
@@ -68,7 +67,6 @@
         <td>{{thuoc.medicine_type}}</td>
         <td>{{thuoc.medicine_price}}</td>
         <td>{{thuoc.medicine_quantity}}</td>
-        <td>{{thuoc.medicine_import_date}}</td>
         <td>{{thuoc.medicine_location}}</td>
       </tr>
       {%endfor%}
