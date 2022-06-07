@@ -54,9 +54,8 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
         import_date: "date".into(),
         location: "Location".into(),
     };
-
+    context.insert("bill_id", "1");
     context.insert("danhsach", &[&val; 20]);
-    context.insert("bill_id", "123");
     tera.render_response("new_bill.html", &context)
 }
 
@@ -77,6 +76,18 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         location: "Location".into(),
     };
 
+    let query = req.query::<HashMap<String, String>>()?;
+    if query.get("submit") == Some(&String::from("find")) {
+        let name = query.get("name");
+        let list =
+            database::find_drug_match_any(name.cloned(), name.cloned(), name.cloned()).await?;
+
+        context.insert("list", &list);
+    } else {
+        let mut all_drug = database::list_drug().await?;
+        all_drug.sort_by(|a, b| a.medicine_id.cmp(&b.medicine_id));
+        context.insert("list", &all_drug);
+    }
     context.insert("danhsach", &[&val; 20]);
     tera.render_response("manage.html", &context)
 }

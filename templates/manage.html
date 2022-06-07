@@ -25,7 +25,7 @@
         </div>
 
         <div class="control">
-          <button class="button is-info p*-1" type="submit">
+          <button class="button is-info p*-1" type="submit" name="submit" value="find">
             Tìm
           </button>
 
@@ -60,16 +60,16 @@
       </tr>
     </thead>
     <tbody>
-      {%for thuoc in danhsach%}
+      {%for thuoc in list%}
       <tr>
-        <td>{{thuoc.id}}</td>
-        <td>{{thuoc.code}}</td>
-        <td>{{thuoc.name}}</td>
-        <td>{{thuoc.type}}</td>
-        <td>{{thuoc.price}}</td>
-        <td>{{thuoc.quantity}}</td>
-        <td>{{thuoc.import_date}}</td>
-        <td>{{thuoc.location}}</td>
+        <td>{{thuoc.medicine_id}}</td>
+        <td>{{thuoc.medicine_code}}</td>
+        <td>{{thuoc.medicine_name}}</td>
+        <td>{{thuoc.medicine_type}}</td>
+        <td>{{thuoc.medicine_price}}</td>
+        <td>{{thuoc.medicine_quantity}}</td>
+        <td>{{thuoc.medicine_import_date}}</td>
+        <td>{{thuoc.medicine_location}}</td>
       </tr>
       {%endfor%}
 
