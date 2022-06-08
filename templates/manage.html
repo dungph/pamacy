@@ -48,6 +48,7 @@
         <th><abbr title="price" style="text-decoration: none;">Giá tiền</abbr></th>
         <th><abbr title="quantity" style="text-decoration: none;">Số lượng</abbr></th>
         <th><abbr title="location" style="text-decoration: none;">Vị trí</abbr></th>
+        <th><abbr title="edit" style="text-decoration: none;"></abbr></th>
       </tr>
     </thead>
     <tbody>
@@ -59,9 +60,95 @@
         <td>{{thuoc.medicine_price}}</td>
         <td>{{thuoc.medicine_quantity}}</td>
         <td>{{thuoc.medicine_location}}</td>
+        <td style="text-align: center;"> <button class="js-modal-trigger button is-inverted is-small" data-target="modal-js-{{thuoc.medicine_id}}">
+         
+            <span class="icon ">
+              <i class="fas fa-pen-fancy"></i>
+              <!-- <i class="fas fa-book"></i> -->
+            </span> 
+          </button></td>  
+        <!-- modal chỉnh sủa thêm thuốc  -->
+        <form action="/manage">
+          <div class="modal" id="modal-js-{{thuoc.medicine_id}}">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+              <header class="modal-card-head">
+                <p class="modal-card-title">Chỉnh sửa thuốc</p>
+                <button class="delete" aria-label="close"></button>
+              </header>
+              <section class="modal-card-body">
+
+                <div class="field">
+                  <label class="label">ID</label>
+                  <div class="control">
+                    <input class="input" type="text" placeholder="Nhập mã thuốc" name="new_medicine_id"
+                      value="{{thuoc.medicine_id}}">
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Tên thuốc</label>
+                  <div class="control">
+                    <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name" value="{{thuoc.medicine_name}}">
+                  </div>
+                </div>
+
+                <div class="level">
+                  <div class="level-left">
+                    <div class="field">
+                      <label class="label">Giá tiền</label>
+                      <div class="control">
+                        <input class="input" type="number" placeholder="Giá tiền" name="new_medicine_price" value="{{thuoc.medicine_price}}">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="level-right">
+                    <div class="field" style="  margin-right: 120px;">
+                      <label class="label">Loại thuốc</label>
+                      <div class="control">
+                        <input class="input" type="text" placeholder="Loại thuốc" name="new_medicine_type" value="{{thuoc.medicine_type}}">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="level">
+                  <div class="level-left">
+                    <div class="field">
+                      <label class="label">Số lượng</label>
+                      <div class="control">
+                        <input class="input" type="number" placeholder="Nhập số lượng" name="new_medicine_quantity" value="{{thuoc.medicine_quantity}}">
+                      </div>
+                    </div>
+                  </div>
+                 
+                </div>
+
+
+                <div class="field">
+                  <label class="label">Vị trí </label>
+                  <div class="control">
+                    <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location" value="{{thuoc.medicine_location}}">
+                  </div>
+                </div>
+              </section>
+              <footer class="modal-card-foot">
+                <div class="field is-grouped">
+                  <div class="control">
+                    <button class="button is-link" type="submit" name="submit" value="medicine_edit">Chỉnh sửa</button>
+                  </div>
+                  <div class="control">
+                    <button class="button is-danger " type="submit" name="submit" value="medicine_delete">Xóa</button>
+                  </div>
+                  <div class="control">
+                    <button class="button is-link is-light" type="reset">Hủy</button>
+                  </div>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </form>
       </tr>
       {%endfor%}
-
     </tbody>
   </table>
 </div>
