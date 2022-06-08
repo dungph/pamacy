@@ -14,7 +14,6 @@
             <select name="medicine_type_query">
               <option value="">Loại thuốc</option>
               {%for drug_type in medicine_type_list %}
-
               <option>{{drug_type}}</option>
               {%endfor%}
             </select>
@@ -44,10 +43,7 @@
   <table class="table is-fullwidth is-hoverable is-bordered is-striped">
     <thead class="has-background-light" style="position: sticky; top: 0;">
       <tr>
-        <th><abbr title="id">STT
-
-          </abbr></th>
-        <th><abbr title="code" style="text-decoration: none;">Mã thuốc</abbr></th>
+        <th><abbr title="id">ID</abbr></th>
         <th><abbr title="name" style="text-decoration: none;">Tên thuốc</abbr></th>
         <th><abbr title="type" style="text-decoration: none;">Loại thuốc</abbr></th>
         <th><abbr title="price" style="text-decoration: none;">Giá tiền</abbr></th>
@@ -59,7 +55,6 @@
       {%for thuoc in display%}
       <tr>
         <td>{{thuoc.medicine_id}}</td>
-        <td>{{thuoc.medicine_code}}</td>
         <td>{{thuoc.medicine_name}}</td>
         <td>{{thuoc.medicine_type}}</td>
         <td>{{thuoc.medicine_price}}</td>
@@ -71,168 +66,91 @@
     </tbody>
   </table>
 </div>
+
 <!-- modal thêm thuốc  -->
-<div class="modal" id="modal-js-example">
-  <div class="modal-background"></div>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title">Bảng thêm thuốc</p>
-      <button class="delete" aria-label="close"></button>
-    </header>
-    <section class="modal-card-body">
+<form action="/manage">
+  <div class="modal" id="modal-js-example">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Bảng thêm thuốc</p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
 
-      <div class="field">
-        <label class="label">Mã thuốc</label>
-        <div class="control">
-          <input class="input" type="text" placeholder="Nhập mã thuốc">
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Tên thuốc</label>
-        <div class="control">
-          <input class="input" type="text" placeholder="Nhập tên thuốc">
-        </div>
-      </div>
-
-      <div class="level">
-        <div class="level-left">
-          <div class="field">
-            <label class="label">Giá tiền</label>
-            <div class="control">
-              <input class="input" type="number" placeholder="Giá tiền">
-            </div>
+        <div class="field">
+          <label class="label">ID</label>
+          <div class="control">
+            <input class="input" type="text" placeholder="Nhập mã thuốc" name="new_medicine_id"
+              value="{{new_medicine_id}}">
           </div>
         </div>
-        <div class="level-right">
-          <div class="field pr-6" style="  margin-right: 120px;">
-            <label class="label">Loại thuốc</label>
-            <div class="control">
-              <div class="select">
-                <select>
-                  <option>Loại thuốc</option>
-                  <option>Thuốc kháng sinh</option>
-                  <option>Thuốc kháng viêm </option>
-                  <option>Thuốc đau hạ sốt</option>
-                  <option>Thuốc kháng virus</option>
-                  <option>Nhóm trị giun</option>
-                  <option>Nhóm dạ dày</option>
-                  <option>Tuýp bôi ngòa da</option>
-                </select>
+        <div class="field">
+          <label class="label">Tên thuốc</label>
+          <div class="control">
+            <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name">
+          </div>
+        </div>
+
+        <div class="level">
+          <div class="level-left">
+            <div class="field">
+              <label class="label">Giá tiền</label>
+              <div class="control">
+                <input class="input" type="number" placeholder="Giá tiền" name="new_medicine_price">
+              </div>
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="field" style="  margin-right: 120px;">
+              <label class="label">Loại thuốc</label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Loại thuốc" name="new_medicine_type">
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="level">
-        <div class="level-left">
-          <div class="field">
-            <label class="label">Số lượng</label>
-            <div class="control">
-              <input class="input" type="number" placeholder="Nhập số lượng">
+        <div class="level">
+          <div class="level-left">
+            <div class="field">
+              <label class="label">Số lượng</label>
+              <div class="control">
+                <input class="input" type="number" placeholder="Nhập số lượng" name="new_medicine_quantity">
+              </div>
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="field pr-6" style="margin-right: 142px;">
+              <label class="label">Ngày hết hạn</label>
+              <div class="control">
+                <input class="input" type="date" placeholder="Ngày hết hạn" name="new_medicine_expire_date">
+              </div>
             </div>
           </div>
         </div>
-        <div class="level-right">
-          <div class="field pr-6" style="margin-right: 142px;">
-            <label class="label">Ngày hết hạn</label>
-            <div class="control">
-              <input class="input" type="date" placeholder="Ngày hết hạn">
-            </div>
+
+
+        <div class="field">
+          <label class="label">Vị trí </label>
+          <div class="control">
+            <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location">
           </div>
         </div>
-      </div>
-
-
-      <div class="field">
-        <label class="label">Vị trí </label>
-        <div class="control">
-          <input class="input" type="text" placeholder="Nhập vị trí">
-        </div>
-      </div>
-      <!-- <div class="field">
-        <label class="label">Mã thu</label>
-        <div class="control has-icons-left has-icons-right">
-          <input class="input is-success" type="text" placeholder="Text input" value="bulma">
-          <span class="icon is-small is-left">
-            <i class="fas fa-user"></i>
-          </span>
-          <span class="icon is-small is-right">
-            <i class="fas fa-check"></i>
-          </span>
-        </div>
-        <p class="help is-success">This username is available</p>
-      </div>
-      
-      <div class="field">
-        <label class="label">Email</label>
-        <div class="control has-icons-left has-icons-right">
-          <input class="input is-danger" type="email" placeholder="Email input" value="hello@">
-          <span class="icon is-small is-left">
-            <i class="fas fa-envelope"></i>
-          </span>
-          <span class="icon is-small is-right">
-            <i class="fas fa-exclamation-triangle"></i>
-          </span>
-        </div>
-        <p class="help is-danger">This email is invalid</p>
-      </div>
-      
-      <div class="field">
-        <label class="label">Subject</label>
-        <div class="control">
-          <div class="select">
-            <select>
-              <option>Select dropdown</option>
-              <option>With options</option>
-            </select>
+      </section>
+      <footer class="modal-card-foot">
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-link" type="submit" name="submit" value="medicine_add">Thêm thuốc</button>
           </div>
-        </div> -->
-      <!-- </div>
-      
-      <div class="field">
-        <label class="label">Message</label>
-        <div class="control">
-          <textarea class="textarea" placeholder="Textarea"></textarea>
+          <div class="control">
+            <button class="button is-link is-light" type="reset">Hủy</button>
+          </div>
         </div>
-      </div>
-      
-      <div class="field">
-        <div class="control">
-          <label class="checkbox">
-            <input type="checkbox">
-            I agree to the <a href="#">terms and conditions</a>
-          </label>
-        </div>
-      </div>
-      
-      <div class="field">
-        <div class="control">
-          <label class="radio">
-            <input type="radio" name="question">
-            Yes
-          </label>
-          <label class="radio">
-            <input type="radio" name="question">
-            No
-          </label>
-        </div>
-      </div> -->
-
-
-    </section>
-    <footer class="modal-card-foot">
-      <div class="field is-grouped">
-        <div class="control">
-          <button class="button is-link">Thêm thuốc</button>
-        </div>
-        <div class="control">
-          <button class="button is-link is-light">Hủy</button>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </div>
   </div>
-</div>
+</form>
 <!-- sự kiện nút thên thuốc -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {

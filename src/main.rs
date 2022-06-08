@@ -69,7 +69,6 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     struct ManageMedicineTemplate {
         medicine_id: String,
         medicine_quantity: String,
-        medicine_code: String,
         medicine_name: String,
         medicine_type: String,
         medicine_price: String,
@@ -92,7 +91,6 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
                 .map(|v| ManageMedicineTemplate {
                     medicine_id: v.medicine_id.to_string(),
                     medicine_quantity: v.medicine_quantity.to_string(),
-                    medicine_code: v.medicine_code.to_string(),
                     medicine_name: v.medicine_name.to_string(),
                     medicine_type: v.medicine_type.to_string(),
                     medicine_price: v.medicine_price.to_string(),
@@ -101,6 +99,50 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
                 .collect()
         }
         Some("medicine_add") => {
+            println!("here");
+            println!("here");
+            println!("here");
+            println!("here");
+            println!("here");
+            let medicine_id = query
+                .get("new_medicine_id")
+                .filter(|s| s.as_str() != "")
+                .ok_or(anyhow::anyhow!(""))?;
+            let medicine_name = query
+                .get("new_medicine_name")
+                .filter(|s| s.as_str() != "")
+                .ok_or(anyhow::anyhow!(""))?;
+            let medicine_price = query
+                .get("new_medicine_price")
+                .filter(|s| s.as_str() != "")
+                .ok_or(anyhow::anyhow!(""))?;
+            let medicine_type = query
+                .get("new_medicine_type")
+                .filter(|s| s.as_str() != "")
+                .ok_or(anyhow::anyhow!(""))?;
+            let medicine_quantity = query
+                .get("new_medicine_quantity")
+                .filter(|s| s.as_str() != "")
+                .ok_or(anyhow::anyhow!(""))?;
+            let medicine_expire_date = query
+                .get("new_medicine_expire_date")
+                .filter(|s| s.as_str() != "")
+                .ok_or(anyhow::anyhow!(""))?;
+            let medicine_location = query
+                .get("new_medicine_location")
+                .filter(|s| s.as_str() != "")
+                .ok_or(anyhow::anyhow!(""))?;
+            database::add_drug(database::DrugInfo {
+                medicine_id: medicine_id.parse::<i32>()?,
+                medicine_expire_date: medicine_expire_date.clone(),
+                medicine_price: medicine_price.parse::<i32>()?,
+                medicine_name: medicine_name.to_string(),
+                medicine_type: medicine_type.to_string(),
+                medicine_quantity: medicine_quantity.parse::<i32>()?,
+                medicine_location: medicine_location.clone(),
+                ..Default::default()
+            })
+            .await?;
             vec![]
         }
         _ => {
@@ -112,7 +154,6 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
                 .map(|v| ManageMedicineTemplate {
                     medicine_id: v.medicine_id.to_string(),
                     medicine_quantity: v.medicine_quantity.to_string(),
-                    medicine_code: v.medicine_code.to_string(),
                     medicine_name: v.medicine_name.to_string(),
                     medicine_type: v.medicine_type.to_string(),
                     medicine_price: v.medicine_price.to_string(),
@@ -123,6 +164,10 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     };
     context.insert("medicine_type_list", &database::list_drug_type().await?);
     context.insert("display", &display);
+    context.insert(
+        "new_medicine_id",
+        &database::next_drug_id().await?.to_string(),
+    );
     tera.render_response("manage.html", &context)
 }
 
