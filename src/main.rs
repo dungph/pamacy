@@ -26,24 +26,23 @@ fn base_context(req: &Request<()>) -> Context {
     context
 }
 
-#[derive(Serialize, Debug, Clone)]
-struct MedicineInfo {
-    id: String,
-    code: String,
-    name: String,
-    r#type: String,
-    price: u32,
-    quantity: i32,
-    import_date: String,
-    location: String,
-}
-
 async fn new_bill(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
 
     let mut context = base_context(&req);
 
+    #[derive(Serialize, Debug, Clone)]
+    struct MedicineInfo {
+        id: String,
+        code: String,
+        name: String,
+        r#type: String,
+        price: u32,
+        quantity: i32,
+        import_date: String,
+        location: String,
+    }
     let val = MedicineInfo {
         id: 1.to_string(),
         code: "fads".into(),
@@ -65,6 +64,23 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
 
     let mut context = base_context(&req);
 
+    #[derive(Deserialize, Debug)]
+    struct FindForm {
+        name: String,
+        medicine_type_query: String,
+    }
+
+    #[derive(Deserialize, Debug)]
+    struct MedicineAddForm {
+        new_medicine_id: i32,
+        new_medicine_expire_date: String,
+        new_medicine_price: i32,
+        new_medicine_name: String,
+        new_medicine_type: String,
+        new_medicine_quantity: i32,
+        new_medicine_location: String,
+    }
+
     #[derive(Serialize, Debug)]
     struct ManageMedicineTemplate {
         medicine_id: String,
@@ -74,96 +90,67 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         medicine_price: String,
         medicine_location: String,
     }
+    let display: Vec<ManageMedicineTemplate> = if let Ok(find_form) = req.query::<FindForm>() {
+        database::find_drug_match_any(
+            Some(find_form.name.clone()),
+            Some(find_form.name),
+            Some(find_form.medicine_type_query),
+        )
+        .await?
+        .iter()
+        .map(|v| ManageMedicineTemplate {
+            medicine_id: v.medicine_id.to_string(),
+            medicine_quantity: v.medicine_quantity.to_string(),
+            medicine_name: v.medicine_name.to_string(),
+            medicine_type: v.medicine_type.to_string(),
+            medicine_price: v.medicine_price.to_string(),
+            medicine_location: v.medicine_location.to_string(),
+        })
+        .collect()
+    } else if let Ok(add_form) = req.query::<MedicineAddForm>() {
+        database::add_drug(database::DrugInfo {
+            medicine_id: add_form.new_medicine_id,
+            medicine_expire_date: add_form.new_medicine_expire_date,
+            medicine_price: add_form.new_medicine_price,
+            medicine_name: add_form.new_medicine_name,
+            medicine_type: add_form.new_medicine_type,
+            medicine_quantity: add_form.new_medicine_quantity,
+            medicine_location: add_form.new_medicine_location,
+            ..Default::default()
+        })
+        .await?;
 
-    let query = req.query::<HashMap<String, String>>()?;
-
-    let display: Vec<ManageMedicineTemplate> = match query.get("submit").map(|s| s.as_str()) {
-        Some("find") => {
-            let name = query.get("name").filter(|name| name.as_str() != "");
-            let medicine_type = query
-                .get("medicine_type_query")
-                .filter(|t| t.as_str() != "");
-            let list =
-                database::find_drug_match_any(name.cloned(), name.cloned(), medicine_type.cloned())
-                    .await?;
-            context.insert("list", &list);
-            list.iter()
-                .map(|v| ManageMedicineTemplate {
-                    medicine_id: v.medicine_id.to_string(),
-                    medicine_quantity: v.medicine_quantity.to_string(),
-                    medicine_name: v.medicine_name.to_string(),
-                    medicine_type: v.medicine_type.to_string(),
-                    medicine_price: v.medicine_price.to_string(),
-                    medicine_location: v.medicine_location.to_string(),
-                })
-                .collect()
-        }
-        Some("medicine_add") => {
-            println!("here");
-            println!("here");
-            println!("here");
-            println!("here");
-            println!("here");
-            let medicine_id = query
-                .get("new_medicine_id")
-                .filter(|s| s.as_str() != "")
-                .ok_or(anyhow::anyhow!(""))?;
-            let medicine_name = query
-                .get("new_medicine_name")
-                .filter(|s| s.as_str() != "")
-                .ok_or(anyhow::anyhow!(""))?;
-            let medicine_price = query
-                .get("new_medicine_price")
-                .filter(|s| s.as_str() != "")
-                .ok_or(anyhow::anyhow!(""))?;
-            let medicine_type = query
-                .get("new_medicine_type")
-                .filter(|s| s.as_str() != "")
-                .ok_or(anyhow::anyhow!(""))?;
-            let medicine_quantity = query
-                .get("new_medicine_quantity")
-                .filter(|s| s.as_str() != "")
-                .ok_or(anyhow::anyhow!(""))?;
-            let medicine_expire_date = query
-                .get("new_medicine_expire_date")
-                .filter(|s| s.as_str() != "")
-                .ok_or(anyhow::anyhow!(""))?;
-            let medicine_location = query
-                .get("new_medicine_location")
-                .filter(|s| s.as_str() != "")
-                .ok_or(anyhow::anyhow!(""))?;
-            database::add_drug(database::DrugInfo {
-                medicine_id: medicine_id.parse::<i32>()?,
-                medicine_expire_date: medicine_expire_date.clone(),
-                medicine_price: medicine_price.parse::<i32>()?,
-                medicine_name: medicine_name.to_string(),
-                medicine_type: medicine_type.to_string(),
-                medicine_quantity: medicine_quantity.parse::<i32>()?,
-                medicine_location: medicine_location.clone(),
-                ..Default::default()
+        let mut all_drug = database::list_drug().await?;
+        all_drug.sort_by(|a, b| a.medicine_id.cmp(&b.medicine_id));
+        all_drug
+            .iter()
+            .map(|v| ManageMedicineTemplate {
+                medicine_id: v.medicine_id.to_string(),
+                medicine_quantity: v.medicine_quantity.to_string(),
+                medicine_name: v.medicine_name.to_string(),
+                medicine_type: v.medicine_type.to_string(),
+                medicine_price: v.medicine_price.to_string(),
+                medicine_location: v.medicine_location.to_string(),
             })
-            .await?;
-            vec![]
-        }
-        _ => {
-            let mut all_drug = database::list_drug().await?;
-            all_drug.sort_by(|a, b| a.medicine_id.cmp(&b.medicine_id));
-            context.insert("list", &all_drug);
-            all_drug
-                .iter()
-                .map(|v| ManageMedicineTemplate {
-                    medicine_id: v.medicine_id.to_string(),
-                    medicine_quantity: v.medicine_quantity.to_string(),
-                    medicine_name: v.medicine_name.to_string(),
-                    medicine_type: v.medicine_type.to_string(),
-                    medicine_price: v.medicine_price.to_string(),
-                    medicine_location: v.medicine_location.to_string(),
-                })
-                .collect()
-        }
+            .collect()
+    } else {
+        let mut all_drug = database::list_drug().await?;
+        all_drug.sort_by(|a, b| a.medicine_id.cmp(&b.medicine_id));
+        all_drug
+            .iter()
+            .map(|v| ManageMedicineTemplate {
+                medicine_id: v.medicine_id.to_string(),
+                medicine_quantity: v.medicine_quantity.to_string(),
+                medicine_name: v.medicine_name.to_string(),
+                medicine_type: v.medicine_type.to_string(),
+                medicine_price: v.medicine_price.to_string(),
+                medicine_location: v.medicine_location.to_string(),
+            })
+            .collect()
     };
-    context.insert("medicine_type_list", &database::list_drug_type().await?);
+
     context.insert("display", &display);
+    context.insert("medicine_type_list", &database::list_drug_type().await?);
     context.insert(
         "new_medicine_id",
         &database::next_drug_id().await?.to_string(),

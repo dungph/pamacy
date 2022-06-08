@@ -98,17 +98,24 @@ pub(super) async fn find_drug_match_any(
                         .to_lowercase()
                         .contains(&c.to_lowercase())
                 })
-                .unwrap_or_else(|| {
-                    medicine_name
-                        .as_ref()
-                        .map(|c| c.as_str() == drug.medicine_name.as_str())
-                        .unwrap_or(true)
-                })
+                .unwrap_or(false)
+                || medicine_name
+                    .as_ref()
+                    .map(|c| {
+                        drug.medicine_name
+                            .to_lowercase()
+                            .contains(&c.to_lowercase())
+                    })
+                    .unwrap_or(true)
         })
         .filter(|drug| {
             medicine_type
                 .as_ref()
-                .map(|c| c.as_str() == drug.medicine_type.as_str())
+                .map(|c| {
+                    drug.medicine_type
+                        .to_lowercase()
+                        .contains(&c.to_lowercase())
+                })
                 .unwrap_or(true)
         })
         .cloned()
