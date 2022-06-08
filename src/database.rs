@@ -1,4 +1,4 @@
-use std::vec;
+use std::{collections::HashSet, vec};
 
 use anyhow::{Ok, Result};
 use async_std::sync::Mutex;
@@ -46,7 +46,7 @@ static DRUG_DB: Lazy<Mutex<Vec<DrugInfo>>> = Lazy::new(|| {
         medicine_group: String::from("M A B F"),
         supplier: String::from("Company A"),
         medicine_quantity: 100,
-        medicine_type: String::from("Type 1"),
+        medicine_type: String::from("Type 2"),
         medicine_location: String::from("Location A"),
     };
     let sample2 = DrugInfo {
@@ -83,26 +83,33 @@ static DRUG_DB: Lazy<Mutex<Vec<DrugInfo>>> = Lazy::new(|| {
 });
 
 pub(super) async fn find_drug_match_any(
-    medicine_code: Option<String>,
+    medicine_id: Option<String>,
     medicine_name: Option<String>,
-    medicine_content: Option<String>,
+    medicine_type: Option<String>,
 ) -> Result<Vec<DrugInfo>> {
     Ok(list_drug()
         .await?
         .iter()
         .filter(|drug| {
-            medicine_code
+            medicine_id
                 .as_ref()
-                .map(|c| c.as_str() == drug.medicine_code.as_str())
-                .unwrap_or(false)
-                || medicine_name
-                    .as_ref()
-                    .map(|c| c.as_str() == drug.medicine_name.as_str())
-                    .unwrap_or(false)
-                || medicine_content
-                    .as_ref()
-                    .map(|c| c.as_str() == drug.medicine_content.as_str())
-                    .unwrap_or(false)
+                .map(|c| {
+                    drug.medicine_code
+                        .to_lowercase()
+                        .contains(&c.to_lowercase())
+                })
+                .unwrap_or_else(|| {
+                    medicine_name
+                        .as_ref()
+                        .map(|c| c.as_str() == drug.medicine_name.as_str())
+                        .unwrap_or(true)
+                })
+        })
+        .filter(|drug| {
+            medicine_type
+                .as_ref()
+                .map(|c| c.as_str() == drug.medicine_type.as_str())
+                .unwrap_or(true)
         })
         .cloned()
         .collect())
@@ -111,7 +118,14 @@ pub(super) async fn find_drug_match_any(
 pub(crate) async fn list_drug() -> anyhow::Result<Vec<DrugInfo>> {
     Ok(DRUG_DB.lock().await.clone())
 }
-
+pub(crate) async fn list_drug_type() -> anyhow::Result<HashSet<String>> {
+    Ok(DRUG_DB
+        .lock()
+        .await
+        .iter()
+        .map(|drug| drug.medicine_type.clone())
+        .collect())
+}
 pub(crate) async fn add_drug(drug: DrugInfo) -> anyhow::Result<()> {
     DRUG_DB.lock().await.push(drug);
     Ok(())

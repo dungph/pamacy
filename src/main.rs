@@ -1,5 +1,5 @@
 mod database;
-use std::collections::HashMap;
+use std::{collections::HashMap, vec};
 
 use async_std::{sync::Mutex, task::block_on};
 use chrono::{DateTime, Utc};
@@ -80,9 +80,13 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
 
     let display: Vec<ManageMedicineTemplate> = match query.get("submit").map(|s| s.as_str()) {
         Some("find") => {
-            let name = query.get("name");
+            let name = query.get("name").filter(|name| name.as_str() != "");
+            let medicine_type = query
+                .get("medicine_type_query")
+                .filter(|t| t.as_str() != "");
             let list =
-                database::find_drug_match_any(name.cloned(), name.cloned(), name.cloned()).await?;
+                database::find_drug_match_any(name.cloned(), name.cloned(), medicine_type.cloned())
+                    .await?;
             context.insert("list", &list);
             list.iter()
                 .map(|v| ManageMedicineTemplate {
@@ -95,6 +99,9 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
                     medicine_location: v.medicine_location.to_string(),
                 })
                 .collect()
+        }
+        Some("medicine_add") => {
+            vec![]
         }
         _ => {
             let mut all_drug = database::list_drug().await?;
@@ -114,6 +121,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
                 .collect()
         }
     };
+    context.insert("medicine_type_list", &database::list_drug_type().await?);
     context.insert("display", &display);
     tera.render_response("manage.html", &context)
 }
