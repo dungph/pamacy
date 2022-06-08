@@ -1,8 +1,8 @@
 mod database;
-use std::{collections::HashMap, vec};
+use std::collections::HashMap;
 
 use async_std::{sync::Mutex, task::block_on};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
@@ -90,6 +90,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         medicine_price: String,
         medicine_location: String,
     }
+
     let display: Vec<ManageMedicineTemplate> = if let Ok(find_form) = req.query::<FindForm>() {
         database::find_drug_match_any(
             Some(find_form.name.clone()),
@@ -119,7 +120,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
             ..Default::default()
         })
         .await?;
-
+        context.insert("alert_message", "Thêm thuốc thành công");
         let mut all_drug = database::list_drug().await?;
         all_drug.sort_by(|a, b| a.medicine_id.cmp(&b.medicine_id));
         all_drug

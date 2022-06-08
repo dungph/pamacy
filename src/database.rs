@@ -5,7 +5,7 @@ use async_std::sync::Mutex;
 use chrono::{Duration, Utc};
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use sqlx::PgPool;
+use sqlx::{query, PgPool};
 
 static DB: Lazy<PgPool> = Lazy::new(|| {
     PgPool::connect_lazy(

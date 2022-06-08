@@ -197,4 +197,10 @@
     });
   });
 </script>
+
+{%if alert_message is defined%}
+<script>
+  alert("{{alert_message}}")
+</script>
+{%endif%}
 {% endblock content %}
