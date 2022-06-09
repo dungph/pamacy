@@ -96,6 +96,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
                 Utc::now(),
             )
             .await?;
+            context.insert("alert_message", "Thêm thành công");
             database::find_drug("".to_string(), "".to_string()).await?
         } else {
             database::find_drug("".to_string(), "".to_string()).await?
