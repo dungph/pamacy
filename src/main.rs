@@ -74,7 +74,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     #[derive(Deserialize, Debug)]
     struct MedicineAddForm {
         medicine_add: String,
-        new_medicine_id: i32,
+        //new_medicine_id: i32,
         new_medicine_expire_date: String,
         new_medicine_price: i32,
         new_medicine_name: String,
@@ -87,12 +87,12 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     struct MedicineEditForm {
         medicine_edit: String,
         new_medicine_id: i32,
-        new_medicine_expire_date: String,
-        new_medicine_price: i32,
         new_medicine_name: String,
-        new_medicine_type: String,
-        new_medicine_quantity: i32,
-        new_medicine_location: String,
+        // new_medicine_expire_date: String,
+        // new_medicine_price: i32,
+        // new_medicine_type: String,
+        // new_medicine_quantity: i32,
+        // new_medicine_location: String,
     }
     #[derive(Deserialize, Debug)]
     struct MedicineDeleteForm {
@@ -120,6 +120,14 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     } else if let Ok(delete_form) = dbg!(req.query::<MedicineDeleteForm>()) {
         database::delete_drug(delete_form.new_medicine_id).await?;
         return Ok(Redirect::new("/manage").into());
+    } else if let Ok(edit_form) = dbg!(req.query::<MedicineEditForm>()) {
+        database::edit_drug(
+            edit_form.new_medicine_id,
+            edit_form.new_medicine_name,
+        )
+        .await?;
+        return Ok(Redirect::new("/manage").into());
+
     } else {
         context.insert(
             "display",

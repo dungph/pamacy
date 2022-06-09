@@ -122,3 +122,26 @@ pub(crate) async fn list_drug_type() -> anyhow::Result<Vec<String>> {
     .map(|obj| obj.medicine_type)
     .collect())
 }
+
+pub(crate) async fn edit_drug(
+    medicine_id: i32,
+    medicine_name: String,
+    // medicine_type: String,
+    // medicine_price: i32,
+    // medicine_quantity: i32,
+    // medicine_location: String,
+    // medicine_expire_date: DateTime<Utc>,
+) -> Result<()> {
+    query!(
+        r#"
+            update medicine
+                set medicine_name = $2
+                where medicine_id = $1
+                "#,
+        medicine_id,
+        medicine_name
+    )
+    .execute(&*DB)
+    .await?;
+    Ok(())
+}
