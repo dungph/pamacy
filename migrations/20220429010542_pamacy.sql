@@ -71,22 +71,10 @@ CREATE TABLE public.medicine (
     medicine_price int4 NOT NULL,
     medicine_expire_date timestamptz NOT NULL,
     medicine_import_date timestamptz NOT NULL,
+    medicine_quantity int4 NOT NULL,
     medicine_location_id int4 NOT NULL,
     CONSTRAINT medicine_pkey PRIMARY KEY (medicine_id),
     CONSTRAINT medicine_medicine_location_id_fkey FOREIGN KEY (medicine_location_id) REFERENCES public."location"(location_id)
-);
-
-
--- public.quantity definition
-
--- Drop table
-
--- DROP TABLE public.quantity;
-
-CREATE TABLE public.quantity (
-    medicine_id int4 NOT NULL,
-    medicine_quantity int4 NOT NULL,
-    CONSTRAINT quantity_medicine_id_fkey FOREIGN KEY (medicine_id) REFERENCES public.medicine(medicine_id)
 );
 
 

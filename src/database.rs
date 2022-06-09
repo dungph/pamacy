@@ -40,7 +40,6 @@ pub(crate) async fn find_drug(
                 medicine_quantity as "medicine_quantity!",
                 location_name as "medicine_location!" 
             from medicine
-            join quantity on quantity.medicine_id = medicine.medicine_id
             join location on location.location_id = medicine_location_id
             where (medicine_name ~* $1 and medicine_type ~* $2)
             "#,
@@ -80,9 +79,10 @@ pub(crate) async fn add_drug(
                     medicine_location_id,
                     medicine_price,
                     medicine_import_date,
-                    medicine_expire_date
+                    medicine_expire_date,
+                    medicine_quantity
                 )
-                values($1, $2, $3, $4, $5, $6)
+                values($1, $2, $3, $4, $5, $6, $7)
                 returning medicine_id;
                 "#,
         medicine_name,
@@ -90,17 +90,20 @@ pub(crate) async fn add_drug(
         location_id,
         medicine_price,
         medicine_import_date,
-        medicine_expire_date
+        medicine_expire_date,
+        medicine_quantity
     )
     .fetch_one(&*DB)
     .await?
     .medicine_id;
+    Ok(())
+}
+pub(crate) async fn delete_drug(id: i32) -> anyhow::Result<()> {
     query!(
-        r#"insert into quantity(medicine_id, medicine_quantity)
-                values ($1, $2)
+        r#"delete from medicine 
+            where medicine_id = $1
                 "#,
-        medicine_id,
-        medicine_quantity
+        id,
     )
     .execute(&*DB)
     .await?;

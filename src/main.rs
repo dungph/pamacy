@@ -73,6 +73,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
 
     #[derive(Deserialize, Debug)]
     struct MedicineAddForm {
+        medicine_add: String,
         new_medicine_id: i32,
         new_medicine_expire_date: String,
         new_medicine_price: i32,
@@ -82,28 +83,50 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         new_medicine_location: String,
     }
 
-    let display: Vec<database::ManageMedicineTemplate> =
-        if let Ok(find_form) = req.query::<FindForm>() {
-            database::find_drug(find_form.name, find_form.medicine_type_query).await?
-        } else if let Ok(add_form) = req.query::<MedicineAddForm>() {
-            database::add_drug(
-                add_form.new_medicine_name,
-                add_form.new_medicine_type,
-                add_form.new_medicine_location,
-                add_form.new_medicine_price,
-                add_form.new_medicine_quantity,
-                Utc::now(),
-                Utc::now(),
-            )
-            .await?;
-            context.insert("alert_message", "Thêm thành công");
-            database::find_drug("".to_string(), "".to_string()).await?
-        } else {
-            database::find_drug("".to_string(), "".to_string()).await?
-            //database::find_drug(None, None).await?
-        };
+    #[derive(Deserialize, Debug)]
+    struct MedicineEditForm {
+        medicine_edit: String,
+        new_medicine_id: i32,
+        new_medicine_expire_date: String,
+        new_medicine_price: i32,
+        new_medicine_name: String,
+        new_medicine_type: String,
+        new_medicine_quantity: i32,
+        new_medicine_location: String,
+    }
+    #[derive(Deserialize, Debug)]
+    struct MedicineDeleteForm {
+        medicine_delete: String,
+        new_medicine_id: i32,
+    }
 
-    context.insert("display", &display);
+    if let Ok(find_form) = req.query::<FindForm>() {
+        context.insert(
+            "display",
+            &database::find_drug(find_form.name, find_form.medicine_type_query).await?,
+        );
+    } else if let Ok(add_form) = dbg!(req.query::<MedicineAddForm>()) {
+        database::add_drug(
+            add_form.new_medicine_name,
+            add_form.new_medicine_type,
+            add_form.new_medicine_location,
+            add_form.new_medicine_price,
+            add_form.new_medicine_quantity,
+            Utc::now(),
+            Utc::now(),
+        )
+        .await?;
+        return Ok(Redirect::new("/manage").into());
+    } else if let Ok(delete_form) = dbg!(req.query::<MedicineDeleteForm>()) {
+        database::delete_drug(delete_form.new_medicine_id).await?;
+        return Ok(Redirect::new("/manage").into());
+    } else {
+        context.insert(
+            "display",
+            &database::find_drug("".to_string(), "".to_string()).await?,
+        );
+    };
+
     context.insert("medicine_type_list", &database::list_drug_type().await?);
     context.insert("new_medicine_id", &1);
     tera.render_response("manage.html", &context)
