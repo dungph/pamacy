@@ -11,7 +11,7 @@ tide = "0.16.0"
 tera = "1.15.0"
 tide-tera = "0.2.4"
 once_cell = "1.12.0" 
-sqlx = {version = "0.5.13", features = ["runtime-async-std-rustls", "postgres"]}
+sqlx = {version = "0.5.13", features = ["runtime-async-std-rustls", "postgres", "chrono"]}
 anyhow = "1.0.57"
 dotenv = "0.15.0"
 serde = "1.0.137"

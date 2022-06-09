@@ -1,11 +1,11 @@
 use std::{collections::HashSet, vec};
 
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use async_std::sync::Mutex;
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use sqlx::{query, PgPool};
+use sqlx::{query, query_as, PgPool};
 
 static DB: Lazy<PgPool> = Lazy::new(|| {
     PgPool::connect_lazy(
@@ -16,132 +16,106 @@ static DB: Lazy<PgPool> = Lazy::new(|| {
     .expect("DB connect lazy failed")
 });
 
-#[derive(Clone, Debug, Serialize, Default)]
-pub(crate) struct DrugInfo {
-    pub medicine_id: i32,
-    pub medicine_import_date: String,
-    pub medicine_expire_date: String,
-    pub medicine_price: i32,
-    pub medicine_code: String,
-    pub medicine_name: String,
-    pub medicine_type: String,
-    pub medicine_content: String,
-    pub medicine_element: String,
-    pub medicine_group: String,
-    pub supplier: String,
-    pub medicine_quantity: i32,
-    pub medicine_location: String,
+#[derive(Serialize, Debug)]
+pub(crate) struct ManageMedicineTemplate {
+    medicine_id: i32,
+    medicine_name: String,
+    medicine_type: String,
+    medicine_price: i32,
+    medicine_quantity: i32,
+    medicine_location: String,
 }
 
-static DRUG_DB: Lazy<Mutex<Vec<DrugInfo>>> = Lazy::new(|| {
-    let sample1 = DrugInfo {
-        medicine_id: 1,
-        medicine_expire_date: (Utc::now() + Duration::days(300)).to_rfc2822(),
-        medicine_import_date: Utc::now().to_rfc2822(),
-        medicine_price: 100000,
-        medicine_code: String::from("MABF"),
-        medicine_name: String::from("Thuoc MABF"),
-        medicine_content: String::from("M A B F"),
-        medicine_element: String::from("M A B F"),
-        medicine_group: String::from("M A B F"),
-        supplier: String::from("Company A"),
-        medicine_quantity: 100,
-        medicine_type: String::from("Type 2"),
-        medicine_location: String::from("Location A"),
-    };
-    let sample2 = DrugInfo {
-        medicine_id: 2,
-        medicine_expire_date: (Utc::now() + Duration::days(300)).to_rfc2822(),
-        medicine_import_date: Utc::now().to_rfc2822(),
-        medicine_price: 80000,
-        medicine_code: String::from("GFEF"),
-        medicine_type: String::from("Type 1"),
-        medicine_name: String::from("Thuoc GFEF"),
-        medicine_content: String::from("M A B F"),
-        medicine_element: String::from("M A B F"),
-        medicine_group: String::from("M A B F"),
-        supplier: String::from("Company B"),
-        medicine_quantity: 80,
-        medicine_location: String::from("Location A"),
-    };
-    let sample3 = DrugInfo {
-        medicine_id: 3,
-        medicine_expire_date: (Utc::now() + Duration::days(300)).to_rfc2822(),
-        medicine_import_date: Utc::now().to_rfc2822(),
-        medicine_price: 100000,
-        medicine_code: String::from("TRE"),
-        medicine_type: String::from("Type 1"),
-        medicine_name: String::from("Thuoc TRE"),
-        medicine_content: String::from("M A B F"),
-        medicine_element: String::from("M A B F"),
-        medicine_group: String::from("M A B F"),
-        supplier: String::from("Company B"),
-        medicine_quantity: 100,
-        medicine_location: String::from("Location A"),
-    };
-    Mutex::new(vec![sample1, sample2, sample3])
-});
-
-pub(super) async fn find_drug_match_any(
-    medicine_id: Option<String>,
-    medicine_name: Option<String>,
-    medicine_type: Option<String>,
-) -> Result<Vec<DrugInfo>> {
-    Ok(list_drug()
-        .await?
-        .iter()
-        .filter(|drug| {
-            medicine_id
-                .as_ref()
-                .map(|c| {
-                    drug.medicine_code
-                        .to_lowercase()
-                        .contains(&c.to_lowercase())
-                })
-                .unwrap_or(false)
-                || medicine_name
-                    .as_ref()
-                    .map(|c| {
-                        drug.medicine_name
-                            .to_lowercase()
-                            .contains(&c.to_lowercase())
-                    })
-                    .unwrap_or(true)
-        })
-        .filter(|drug| {
-            medicine_type
-                .as_ref()
-                .map(|c| {
-                    drug.medicine_type
-                        .to_lowercase()
-                        .contains(&c.to_lowercase())
-                })
-                .unwrap_or(true)
-        })
-        .cloned()
-        .collect())
+pub(crate) async fn find_drug(
+    name: String,
+    drug_type: String,
+) -> Result<Vec<ManageMedicineTemplate>> {
+    Ok(query_as!(
+        ManageMedicineTemplate,
+        r#"select 
+                medicine.medicine_id as "medicine_id!",
+                medicine_name as "medicine_name!",
+                medicine_type as "medicine_type!",
+                medicine_price as "medicine_price!",
+                medicine_quantity as "medicine_quantity!",
+                location_name as "medicine_location!" 
+            from medicine
+            join quantity on quantity.medicine_id = medicine.medicine_id
+            join location on location.location_id = medicine_location_id
+            where (medicine_name ~* $1 and medicine_type ~* $2)
+            "#,
+        name,
+        drug_type
+    )
+    .fetch_all(&*DB)
+    .await?)
 }
 
-pub(crate) async fn list_drug() -> anyhow::Result<Vec<DrugInfo>> {
-    Ok(DRUG_DB.lock().await.clone())
-}
-pub(crate) async fn list_drug_type() -> anyhow::Result<HashSet<String>> {
-    Ok(DRUG_DB
-        .lock()
-        .await
-        .iter()
-        .map(|drug| drug.medicine_type.clone())
-        .collect())
-}
-pub(crate) async fn add_drug(drug: DrugInfo) -> anyhow::Result<()> {
-    DRUG_DB.lock().await.push(drug);
+pub(crate) async fn add_drug(
+    medicine_name: String,
+    medicine_type: String,
+    medicine_location: String,
+    medicine_price: i32,
+    medicine_quantity: i32,
+    medicine_import_date: DateTime<Utc>,
+    medicine_expire_date: DateTime<Utc>,
+) -> Result<()> {
+    let location_id: i32 = query!(
+        r#"insert into location(location_name)
+            values ($1)
+            on conflict do nothing
+            returning location_id as id;
+            "#,
+        medicine_location
+    )
+    .fetch_one(&*DB)
+    .await
+    .map_err(|ee| anyhow::anyhow!(ee))?
+    .id;
+
+    let medicine_id = query!(
+        r#"insert into medicine(
+                    medicine_name,
+                    medicine_type,
+                    medicine_location_id,
+                    medicine_price,
+                    medicine_import_date,
+                    medicine_expire_date
+                )
+                values($1, $2, $3, $4, $5, $6)
+                returning medicine_id;
+                "#,
+        medicine_name,
+        medicine_type,
+        location_id,
+        medicine_price,
+        medicine_import_date,
+        medicine_expire_date
+    )
+    .fetch_one(&*DB)
+    .await?
+    .medicine_id;
+    query!(
+        r#"insert into quantity(medicine_id, medicine_quantity)
+                values ($1, $2)
+                "#,
+        medicine_id,
+        medicine_quantity
+    )
+    .execute(&*DB)
+    .await?;
     Ok(())
 }
-pub(crate) async fn next_drug_id() -> anyhow::Result<i32> {
-    Ok(DRUG_DB
-        .lock()
-        .await
-        .last()
-        .map(|drug| drug.medicine_id + 1)
-        .unwrap_or(1))
+pub(crate) async fn list_drug_type() -> anyhow::Result<Vec<String>> {
+    Ok(query!(
+        r#"select medicine_type as "medicine_type!"
+              from medicine
+              group by medicine_type
+              "#,
+    )
+    .fetch_all(&*DB)
+    .await?
+    .into_iter()
+    .map(|obj| obj.medicine_type)
+    .collect())
 }
