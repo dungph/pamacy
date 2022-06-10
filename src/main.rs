@@ -2,7 +2,7 @@ mod database;
 use std::collections::HashMap;
 
 use async_std::{sync::Mutex, task::block_on};
-use chrono::Utc;
+use chrono::{DateTime, FixedOffset, Local, NaiveDate, NaiveTime, Offset, TimeZone, Utc};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as, PgPool};
@@ -67,15 +67,15 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
 
     #[derive(Deserialize, Debug)]
     struct FindForm {
-        name: String,
-        medicine_type_query: String,
+        find_medicine_name: String,
+        find_medicine_type: String,
     }
 
     #[derive(Deserialize, Debug)]
     struct MedicineAddForm {
-        medicine_add: String,
+        //medicine_add: String,
         //new_medicine_id: i32,
-        new_medicine_expire_date: String,
+        new_medicine_expire_date: NaiveDate,
         new_medicine_price: i32,
         new_medicine_name: String,
         new_medicine_type: String,
@@ -103,7 +103,8 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     if let Ok(find_form) = req.query::<FindForm>() {
         context.insert(
             "display",
-            &database::find_drug(find_form.name, find_form.medicine_type_query).await?,
+            &database::find_drug(find_form.find_medicine_name, find_form.find_medicine_type)
+                .await?,
         );
     } else if let Ok(add_form) = dbg!(req.query::<MedicineAddForm>()) {
         database::add_drug(
@@ -113,7 +114,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
             add_form.new_medicine_price,
             add_form.new_medicine_quantity,
             Utc::now(),
-            Utc::now(),
+            DateTime::from_utc(add_form.new_medicine_expire_date.and_hms(0, 0, 0), Utc),
         )
         .await?;
         return Ok(Redirect::new("/manage").into());
@@ -121,13 +122,8 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         database::delete_drug(delete_form.new_medicine_id).await?;
         return Ok(Redirect::new("/manage").into());
     } else if let Ok(edit_form) = dbg!(req.query::<MedicineEditForm>()) {
-        database::edit_drug(
-            edit_form.new_medicine_id,
-            edit_form.new_medicine_name,
-        )
-        .await?;
+        database::edit_drug(edit_form.new_medicine_id, edit_form.new_medicine_name).await?;
         return Ok(Redirect::new("/manage").into());
-
     } else {
         context.insert(
             "display",
@@ -190,17 +186,10 @@ async fn login(mut req: Request<()>) -> Result<Response> {
         Login { username: String, password: String },
         Logout { username: String },
     }
-    let form: Session = req.body_form().await?;
+    let form: Session = dbg!(req.body_form().await?);
     match form {
         Session::Login { username, password } => {
-            if LOGIN_CREDENTAL
-                .lock()
-                .await
-                .get(username.as_str())
-                .map(|s| s.as_str())
-                .unwrap_or_else(|| "")
-                .eq(password.as_str())
-            {
+            if database::match_user(username.as_str(), password.as_str()).await? {
                 let res: Response = Redirect::new("/manage").into();
                 req.session_mut().insert("user", username)?;
                 Ok(res)
@@ -252,5 +241,6 @@ fn main() -> anyhow::Result<()> {
     server.at("/customer").with(Auth).get(customer);
     server.at("/statistic").with(Auth).get(statistic);
 
+    block_on(database::migrate())?;
     Ok(block_on(server.listen("0.0.0.0:8080"))?)
 }

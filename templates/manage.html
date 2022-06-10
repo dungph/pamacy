@@ -7,11 +7,11 @@
     <form action="" method="get">
       <div class="field has-addons">
         <div class="control">
-          <input class="input" type="text" placeholder="Nhập Mã, Tên thuốc" name="name">
+          <input class="input" type="text" placeholder="Nhập Mã, Tên thuốc" name="find_medicine_name">
         </div>
         <div class="control">
           <div class="select">
-            <select name="medicine_type_query">
+            <select name="find_medicine_type">
               <option value="">Loại thuốc</option>
               {%for drug_type in medicine_type_list %}
               <option>{{drug_type}}</option>
@@ -21,7 +21,7 @@
         </div>
 
         <div class="control">
-          <button class="button is-info p*-1" type="submit" name="submit" value="find">
+          <button class="button is-info p*-1" type="submit" name="medicine_find" value="">
             Tìm
           </button>
 
@@ -60,13 +60,14 @@
         <td>{{thuoc.medicine_price}}</td>
         <td>{{thuoc.medicine_quantity}}</td>
         <td>{{thuoc.medicine_location}}</td>
-        <td style="text-align: center;"> <button class="js-modal-trigger button is-inverted is-small" data-target="modal-js-{{thuoc.medicine_id}}">
-         
+        <td style="text-align: center;"> <button class="js-modal-trigger button is-inverted is-small"
+            data-target="modal-js-{{thuoc.medicine_id}}">
+
             <span class="icon ">
               <i class="fas fa-pen-fancy"></i>
               <!-- <i class="fas fa-book"></i> -->
-            </span> 
-          </button></td>  
+            </span>
+          </button></td>
         <!-- modal chỉnh sủa thêm thuốc  -->
         <form action="/manage">
           <div class="modal" id="modal-js-{{thuoc.medicine_id}}">
@@ -88,7 +89,8 @@
                 <div class="field">
                   <label class="label">Tên thuốc</label>
                   <div class="control">
-                    <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name" value="{{thuoc.medicine_name}}">
+                    <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name"
+                      value="{{thuoc.medicine_name}}">
                   </div>
                 </div>
 
@@ -97,7 +99,8 @@
                     <div class="field">
                       <label class="label">Giá tiền</label>
                       <div class="control">
-                        <input class="input" type="number" placeholder="Giá tiền" name="new_medicine_price" value="{{thuoc.medicine_price}}">
+                        <input class="input" type="number" placeholder="Giá tiền" name="new_medicine_price"
+                          value="{{thuoc.medicine_price}}">
                       </div>
                     </div>
                   </div>
@@ -105,7 +108,8 @@
                     <div class="field" style="  margin-right: 120px;">
                       <label class="label">Loại thuốc</label>
                       <div class="control">
-                        <input class="input" type="text" placeholder="Loại thuốc" name="new_medicine_type" value="{{thuoc.medicine_type}}">
+                        <input class="input" type="text" placeholder="Loại thuốc" name="new_medicine_type"
+                          value="{{thuoc.medicine_type}}">
                       </div>
                     </div>
                   </div>
@@ -116,18 +120,20 @@
                     <div class="field">
                       <label class="label">Số lượng</label>
                       <div class="control">
-                        <input class="input" type="number" placeholder="Nhập số lượng" name="new_medicine_quantity" value="{{thuoc.medicine_quantity}}">
+                        <input class="input" type="number" placeholder="Nhập số lượng" name="new_medicine_quantity"
+                          value="{{thuoc.medicine_quantity}}">
                       </div>
                     </div>
                   </div>
-                 
+
                 </div>
 
 
                 <div class="field">
                   <label class="label">Vị trí </label>
                   <div class="control">
-                    <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location" value="{{thuoc.medicine_location}}">
+                    <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location"
+                      value="{{thuoc.medicine_location}}">
                   </div>
                 </div>
               </section>
@@ -168,7 +174,7 @@
           <label class="label">ID</label>
           <div class="control">
             <input class="input" type="text" placeholder="Nhập mã thuốc" name="new_medicine_id"
-              value="{{new_medicine_id}}" >
+              value="{{new_medicine_id}}">
           </div>
         </div>
         <div class="field">

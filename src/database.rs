@@ -15,7 +15,19 @@ static DB: Lazy<PgPool> = Lazy::new(|| {
     )
     .expect("DB connect lazy failed")
 });
-
+pub(crate) async fn migrate() -> Result<()> {
+    sqlx::migrate!().run(&*DB).await?;
+    query!(
+        r#"
+        insert into staff(staff_name, staff_username, staff_password)
+        values ('Administrator', 'admin', 'admin')
+        on conflict (staff_username) do nothing;
+        "#
+    )
+    .execute(&*DB)
+    .await?;
+    Ok(())
+}
 #[derive(Serialize, Debug)]
 pub(crate) struct ManageMedicineTemplate {
     medicine_id: i32,
@@ -144,4 +156,18 @@ pub(crate) async fn edit_drug(
     .execute(&*DB)
     .await?;
     Ok(())
+}
+
+pub(crate) async fn match_user(username: &str, password: &str) -> Result<bool> {
+    Ok(query!(
+        r#"
+        select staff_password from staff
+        where staff_username = $1 and staff_password = $2
+        "#,
+        username,
+        password
+    )
+    .fetch_optional(&*DB)
+    .await?
+    .is_some())
 }

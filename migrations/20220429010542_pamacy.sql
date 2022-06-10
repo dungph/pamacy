@@ -35,7 +35,7 @@ CREATE TABLE public."location" (
 CREATE TABLE public.staff (
     staff_id serial4 NOT NULL,
     staff_name text NOT NULL,
-    staff_username text NOT NULL,
+    staff_username text NOT NULL UNIQUE,
     staff_password text NOT NULL,
     CONSTRAINT staff_pkey PRIMARY KEY (staff_id)
 );
@@ -50,6 +50,7 @@ CREATE TABLE public.staff (
 CREATE TABLE public.bill (
     bill_id serial4 NOT NULL,
     bill_time timestamptz NOT NULL DEFAULT now(),
+    bill_prescripted boolean NOT NULL default false,
     staff_id int4 NOT NULL,
     customer_id int4 NOT NULL,
     CONSTRAINT bill_pkey PRIMARY KEY (bill_id),
@@ -69,10 +70,11 @@ CREATE TABLE public.medicine (
     medicine_name text NOT NULL,
     medicine_type text NOT NULL,
     medicine_price int4 NOT NULL,
-    medicine_expire_date timestamptz NOT NULL,
+    medicine_expire_date timestamptz NOT NULL default now(),
     medicine_import_date timestamptz NOT NULL,
     medicine_quantity int4 NOT NULL,
     medicine_location_id int4 NOT NULL,
+    medicine_prescripted boolean NOT NULL default false,
     CONSTRAINT medicine_pkey PRIMARY KEY (medicine_id),
     CONSTRAINT medicine_medicine_location_id_fkey FOREIGN KEY (medicine_location_id) REFERENCES public."location"(location_id)
 );
