@@ -1,4 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-
+    
+    <table class="table is-fullwidth is-hoverable is-bordered is-striped">
+      <thead class="has-background-light" style="position: sticky; top: 0;">
+        <tr>
+          <th><abbr title="code">Mã don</abbr></th>
+          <th><abbr title="name">Thoi gian</abbr></th>
+          <th><abbr title="type">Ke don</abbr></th>
+          <th><abbr title="price">Hoan thanh</abbr></th>
+          <th><abbr title="quantity">Nhan vien</abbr></th>
+          <th><abbr title="location">Khach hang</abbr></th>
+        </tr>
+      </thead>
+      <tbody>
+        {%for thuoc in list_bill_sumary%}
+        <tr>
+          <td>{{thuoc.bill_id}}</td>
+          <td>{{thuoc.bill_time}}</td>
+          <td>{{thuoc.bill_prescripted}}</td>
+          <td>{{thuoc.bill_done}}</td>
+          <td>{{thuoc.staff_name}}</td>
+          <td>{{thuoc.customer_name}}</td>
+        </tr>
+        {%endfor%}
+      </tbody>
+    </table>
 {% endblock content %}

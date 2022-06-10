@@ -1,11 +1,9 @@
 mod database;
-use std::collections::HashMap;
 
 use async_std::{sync::Mutex, task::block_on};
-use chrono::{DateTime, FixedOffset, Local, NaiveDate, NaiveTime, Offset, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use sqlx::{query, query_as, PgPool};
 use tera::{Context, Tera};
 use tide::{Middleware, Redirect, Request, Response, Result};
 use tide_tera::TideTeraExt;
@@ -13,18 +11,23 @@ use tide_tera::TideTeraExt;
 static TERA: Lazy<Mutex<Tera>> =
     Lazy::new(|| Mutex::new(Tera::new("templates/**/*.html").unwrap()));
 
-static LOGIN_CREDENTAL: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| {
-    Mutex::new(HashMap::from_iter(
-        [("admin".to_owned(), "admin".to_owned())].into_iter(),
-    ))
-});
-
 fn base_context(req: &Request<()>) -> Context {
     let mut context = Context::new();
     let username = &req.session().get::<String>("user").unwrap_or_default();
-    context.insert("username", &username);
+    context.insert("staff_username", &username);
     context.insert("current_time", &Utc::now().to_rfc3339());
-
+    context.insert(
+        "staff_id",
+        &req.session()
+            .get::<String>("id")
+            .unwrap_or_else(|| "Unknown".to_string()),
+    );
+    context.insert(
+        "staff_name",
+        &req.session()
+            .get::<String>("name")
+            .unwrap_or_else(|| "Unknown".to_string()),
+    );
     context
 }
 
@@ -34,29 +37,61 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
 
     let mut context = base_context(&req);
 
-    #[derive(Serialize, Debug, Clone)]
-    struct MedicineInfo {
-        id: String,
-        code: String,
-        name: String,
-        r#type: String,
-        price: u32,
-        quantity: i32,
-        import_date: String,
-        location: String,
+    #[derive(Deserialize, Debug)]
+    struct NewBill {
+        bill_id: i32,
+        staff_id: i32,
+        date: NaiveDate,
+        bill_prescripted: String,
+        customer_phone: String,
+        customer_name: String,
+        medicine_id: i32,
+        medicine_quantity: i32,
     }
-    let val = MedicineInfo {
-        id: 1.to_string(),
-        code: "fads".into(),
-        name: "Name".into(),
-        r#type: "Name".into(),
-        price: 12,
-        quantity: 12,
-        import_date: "date".into(),
-        location: "Location".into(),
-    };
-    context.insert("bill_id", "1");
-    context.insert("danhsach", &[&val; 20]);
+
+    #[derive(Serialize, Debug, Clone)]
+    struct BillInfo {
+        staff_id: i32,
+        staff_name: String,
+        bill_id: i32,
+        date: NaiveDate,
+        bill_prescripted: String,
+        customer_phone: String,
+        customer_name: String,
+    }
+
+    if let Ok(new) = dbg!(req.query::<NewBill>()) {
+        database::update_bill(
+            new.bill_id,
+            &new.bill_prescripted == "yes",
+            false,
+            new.staff_id,
+            new.customer_phone.clone(),
+            new.customer_name.clone(),
+            String::new(),
+        )
+        .await?;
+
+        context.insert("date", &Utc::today().format("%D").to_string());
+        context.insert("staff_id", &new.staff_id);
+        context.insert("bill_id", &new.bill_id);
+        context.insert("date", &new.date);
+        context.insert("customer_phone", &new.customer_phone);
+        context.insert("customer_name", &new.customer_name);
+        context.insert("bill_prescripted", &new.bill_prescripted);
+
+        database::add_bill_medicine(new.bill_id, new.medicine_id, 0, new.medicine_quantity).await?;
+    } else {
+        let bill_id = database::new_bill().await?;
+        context.insert("date", &Utc::today().format("%D").to_string());
+        context.insert("bill_id", &bill_id);
+        context.insert("staff_id", &1);
+        context.insert("bill_prescripted", &"yes".to_string());
+        context.insert("customer_name", &"Qua đường".to_string());
+        context.insert("customer_phone", &"0".to_string());
+        context.insert("date", &Utc::today().naive_utc()); //.format("%D").to_string(),
+    }
+    context.insert("danhsach", &database::list_bill_medicine(1).await?);
     tera.render_response("bill/new_bill.html", &context)
 }
 
@@ -151,17 +186,19 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     tera.render_response("manage/manage.html", &context)
 }
 
+async fn bills(req: Request<()>) -> Result<Response> {
+    let mut tera = TERA.lock().await;
+    tera.full_reload()?;
+    let mut context = base_context(&req);
+    context.insert("list_bill_sumary", &database::all_bill(true).await?);
+
+    tera.render_response("bill/bills.html", &context)
+}
 async fn staff(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
     let mut context = base_context(&req);
     tera.render_response("staff.html", &context)
-}
-async fn bills(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = base_context(&req);
-    tera.render_response("bill/bills.html", &context)
 }
 async fn finance(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
@@ -206,6 +243,9 @@ async fn login(mut req: Request<()>) -> Result<Response> {
         Session::Login { username, password } => {
             if database::match_user(username.as_str(), password.as_str()).await? {
                 let res: Response = Redirect::new("/manage").into();
+                let (id, name) = database::get_staff_info(username.as_str()).await?;
+                req.session_mut().insert("id", id)?;
+                req.session_mut().insert("name", name)?;
                 req.session_mut().insert("user", username)?;
                 Ok(res)
             } else {

@@ -55,6 +55,12 @@
           </span>
           Lập hóa đơn
         </a>
+        <a class="panel-block" href="/bills">
+          <span class="panel-icon">
+            <i class="fas fa-bullseye" aria-hidden="true"></i>
+          </span>
+          Xem hoa don
+        </a>
         <a class="panel-block " href="/manage">
           <span class="panel-icon">
             <i class="fas fa-table" aria-hidden="true"></i>
@@ -102,14 +108,14 @@
           <div class="navbar-start"></div>
 
           <div class="navbar-end">
-            {% if username is defined %}
+            {% if staff_username is defined %}
 
             <form action="/login" method="post">
               <div class="field is-horizontal pr-5">
-                <input type="hidden" name="username" value="{{username}}" class="navbar-item">
+                <input type="hidden" name="username" value="{{staff_username}}" class="navbar-item">
 
                 <div class="navbar-item">
-                <a class="subtitle navbar-item"> {{username}} </a>
+                <a class="subtitle navbar-item"> {{staff_name}} </a>
                 </div>
                 <div class="navbar-item">
                   <button placeholder="bobsmith" class="button" required name="submit" value="logout">
