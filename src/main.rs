@@ -57,7 +57,7 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
     };
     context.insert("bill_id", "1");
     context.insert("danhsach", &[&val; 20]);
-    tera.render_response("new_bill.html", &context)
+    tera.render_response("bill/new_bill.html", &context)
 }
 
 async fn manage_page(req: Request<()>) -> Result<Response> {
@@ -157,7 +157,7 @@ async fn bills(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
     let mut context = base_context(&req);
-    tera.render_response("bills.html", &context)
+    tera.render_response("bill/bills.html", &context)
 }
 async fn finance(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
