@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+
+<p class="title is-5"><b>Danh sách thuốc</b></p>
+<div class="level">
+  <div class="level-left">
+    <form action="" method="get">
+      <div class="field has-addons">
+        <div class="control">
+          <input class="input" type="text" placeholder="Nhập Mã, Tên thuốc" name="find_medicine_name">
+        </div>
+        <div class="control">
+          <div class="select">
+            <select name="find_medicine_type">
+              <option value="">Loại thuốc</option>
+              {%for drug_type in medicine_type_list %}
+              <option>{{drug_type}}</option>
+              {%endfor%}
+            </select>
+          </div>
+        </div>
+
+        <div class="control">
+          <button class="button is-info p*-1" type="submit" name="medicine_find" value="">
+            Tìm
+          </button>
+
+        </div>
+
+      </div>
+    </form>
+  </div>
+  <div class="level-left">
+    <button class="js-modal-trigger button is-info p*-1" data-target="modal-js-example">
+      Thêm Thuốc
+    </button>
+  </div>
+</div>
+
+</br>
+<div class="table-container" style="height:80%; overflow: scroll">
+  <table class="table is-fullwidth is-hoverable is-bordered is-striped">
+    <thead class="has-background-light" style="position: sticky; top: 0;">
+      <tr>
+        <th><abbr title="id">ID</abbr></th>
+        <th><abbr title="name" style="text-decoration: none;">Tên thuốc</abbr></th>
+        <th><abbr title="type" style="text-decoration: none;">Loại thuốc</abbr></th>
+        <th><abbr title="price" style="text-decoration: none;">Giá tiền</abbr></th>
+        <th><abbr title="quantity" style="text-decoration: none;">Số lượng</abbr></th>
+        <th><abbr title="location" style="text-decoration: none;">Vị trí</abbr></th>
+        <th><abbr title="edit" style="text-decoration: none;"></abbr></th>
+      </tr>
+    </thead>
+    <tbody>
+      {%for thuoc in display%}
+      <tr>
+        <td>{{thuoc.medicine_id}}</td>
+        <td>{{thuoc.medicine_name}}</td>
+        <td>{{thuoc.medicine_type}}</td>
+        <td>{{thuoc.medicine_price}}</td>
+        <td>{{thuoc.medicine_quantity}}</td>
+        <td>{{thuoc.medicine_location}}</td>
+        <td style="text-align: center;"> <button class="js-modal-trigger button is-inverted is-small"
+            data-target="modal-js-{{thuoc.medicine_id}}">
+
+            <span class="icon ">
+              <i class="fas fa-pen-fancy"></i>
+              <!-- <i class="fas fa-book"></i> -->
+            </span>
+          </button></td>
+          <!-- modal chỉnh sủa xóa thuốc  -->
+          {% include 'manage/medicine_edit_form.html'%}
+      </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+</div>
+
+<!-- modal thêm thuốc  -->
+{% include 'manage/medicine_add_form.html'%}
+
+<!-- sự kiện nút thên sửa xóa thuốc -->
+{% include 'manage/js.html'%}
+
+{%if alert_message is defined%}
+<script>
+  alert("{{alert_message}}")
+</script>
+{%endif%}
+{% endblock content %}

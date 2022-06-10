@@ -1,0 +1,84 @@
+
+<form action="/manage">
+  <div class="modal" id="modal-js-example">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Bảng thêm thuốc</p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+
+        <div class="field">
+          <label class="label">ID</label>
+          <div class="control">
+            <input class="input" type="text" placeholder="Nhập mã thuốc" name="new_medicine_id"
+              value="{{new_medicine_id}}">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Tên thuốc</label>
+          <div class="control">
+            <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name">
+          </div>
+        </div>
+
+        <div class="level">
+          <div class="level-left">
+            <div class="field">
+              <label class="label">Giá tiền</label>
+              <div class="control">
+                <input class="input" type="number" placeholder="Giá tiền" name="new_medicine_price">
+              </div>
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="field" style="  margin-right: 120px;">
+              <label class="label">Loại thuốc</label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Loại thuốc" name="new_medicine_type">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="level">
+          <div class="level-left">
+            <div class="field">
+              <label class="label">Số lượng</label>
+              <div class="control">
+                <input class="input" type="number" placeholder="Nhập số lượng" name="new_medicine_quantity">
+              </div>
+            </div>
+          </div>
+          <div class="level-right">
+            <div class="field pr-6" style="margin-right: 142px;">
+              <label class="label">Ngày hết hạn</label>
+              <div class="control">
+                <input class="input" type="date" placeholder="Ngày hết hạn" name="new_medicine_expire_date">
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="field">
+          <label class="label">Vị trí </label>
+          <div class="control">
+            <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location">
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-link" type="submit" name="medicine_add" value="">Thêm thuốc</button>
+          </div>
+          <div class="control">
+            <button class="button is-link is-light" type="reset">Hủy</button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+</form>

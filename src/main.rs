@@ -10,7 +10,8 @@ use tera::{Context, Tera};
 use tide::{Middleware, Redirect, Request, Response, Result};
 use tide_tera::TideTeraExt;
 
-static TERA: Lazy<Mutex<Tera>> = Lazy::new(|| Mutex::new(Tera::new("templates/*.html").unwrap()));
+static TERA: Lazy<Mutex<Tera>> =
+    Lazy::new(|| Mutex::new(Tera::new("templates/**/*.html").unwrap()));
 
 static LOGIN_CREDENTAL: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| {
     Mutex::new(HashMap::from_iter(
@@ -143,7 +144,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     context.insert("medicine_location_list", &database::list_location().await?);
 
     context.insert("new_medicine_id", &1);
-    tera.render_response("manage.html", &context)
+    tera.render_response("manage/manage.html", &context)
 }
 
 async fn staff(req: Request<()>) -> Result<Response> {
