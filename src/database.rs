@@ -84,7 +84,7 @@ pub(crate) async fn add_drug(
     .map_err(|ee| anyhow::anyhow!(ee))?
     .id;
 
-    let medicine_id = query!(
+    query!(
         r#"insert into medicine(
                     medicine_name,
                     medicine_type,
@@ -95,7 +95,6 @@ pub(crate) async fn add_drug(
                     medicine_quantity
                 )
                 values($1, $2, $3, $4, $5, $6, $7)
-                returning medicine_id;
                 "#,
         medicine_name,
         medicine_type,
@@ -105,9 +104,8 @@ pub(crate) async fn add_drug(
         medicine_expire_date,
         medicine_quantity
     )
-    .fetch_one(&*DB)
-    .await?
-    .medicine_id;
+    .execute(&*DB)
+    .await?;
     Ok(())
 }
 pub(crate) async fn delete_drug(id: i32) -> anyhow::Result<()> {
@@ -121,6 +119,7 @@ pub(crate) async fn delete_drug(id: i32) -> anyhow::Result<()> {
     .await?;
     Ok(())
 }
+
 pub(crate) async fn list_drug_type() -> anyhow::Result<Vec<String>> {
     Ok(query!(
         r#"select medicine_type as "medicine_type!"
@@ -134,24 +133,55 @@ pub(crate) async fn list_drug_type() -> anyhow::Result<Vec<String>> {
     .map(|obj| obj.medicine_type)
     .collect())
 }
-
+pub(crate) async fn list_location() -> Result<Vec<String>> {
+    Ok(query!(
+        r#"select location_name as "location_name!"
+              from location
+              group by location_name
+              "#,
+    )
+    .fetch_all(&*DB)
+    .await?
+    .into_iter()
+    .map(|obj| obj.location_name)
+    .collect())
+}
 pub(crate) async fn edit_drug(
     medicine_id: i32,
     medicine_name: String,
-    // medicine_type: String,
-    // medicine_price: i32,
-    // medicine_quantity: i32,
-    // medicine_location: String,
-    // medicine_expire_date: DateTime<Utc>,
+    medicine_type: String,
+    medicine_price: i32,
+    medicine_quantity: i32,
+    medicine_location: String,
 ) -> Result<()> {
+    let location_id: i32 = query!(
+        r#"insert into location(location_name)
+            values ($1)
+            on conflict do nothing
+            returning location_id as id;
+            "#,
+        medicine_location
+    )
+    .fetch_one(&*DB)
+    .await
+    .map_err(|ee| anyhow::anyhow!(ee))?
+    .id;
     query!(
         r#"
             update medicine
-                set medicine_name = $2
+                set medicine_name = $2,
+                    medicine_type = $3,
+                    medicine_price = $4,
+                    medicine_quantity = $5,
+                    medicine_location_id = $6
                 where medicine_id = $1
                 "#,
         medicine_id,
-        medicine_name
+        medicine_name,
+        medicine_type,
+        medicine_price,
+        medicine_quantity,
+        location_id,
     )
     .execute(&*DB)
     .await?;

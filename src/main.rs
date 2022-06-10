@@ -88,11 +88,10 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         medicine_edit: String,
         new_medicine_id: i32,
         new_medicine_name: String,
-        // new_medicine_expire_date: String,
-        // new_medicine_price: i32,
-        // new_medicine_type: String,
-        // new_medicine_quantity: i32,
-        // new_medicine_location: String,
+        new_medicine_price: i32,
+        new_medicine_type: String,
+        new_medicine_quantity: i32,
+        new_medicine_location: String,
     }
     #[derive(Deserialize, Debug)]
     struct MedicineDeleteForm {
@@ -122,7 +121,16 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         database::delete_drug(delete_form.new_medicine_id).await?;
         return Ok(Redirect::new("/manage").into());
     } else if let Ok(edit_form) = dbg!(req.query::<MedicineEditForm>()) {
-        database::edit_drug(edit_form.new_medicine_id, edit_form.new_medicine_name).await?;
+        //database::edit_drug(edit_form.new_medicine_id, edit_form.new_medicine_name ).await?;
+        database::edit_drug(
+            edit_form.new_medicine_id,
+            edit_form.new_medicine_name,
+            edit_form.new_medicine_type,
+            edit_form.new_medicine_price,
+            edit_form.new_medicine_quantity,
+            edit_form.new_medicine_location,
+        )
+        .await?;
         return Ok(Redirect::new("/manage").into());
     } else {
         context.insert(
@@ -132,6 +140,8 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     };
 
     context.insert("medicine_type_list", &database::list_drug_type().await?);
+    context.insert("medicine_location_list", &database::list_location().await?);
+
     context.insert("new_medicine_id", &1);
     tera.render_response("manage.html", &context)
 }
