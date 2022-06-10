@@ -8,23 +8,32 @@
       </header>
       <section class="modal-card-body">
 
-        <div class="field">
-          <label class="label">ID</label>
-          <div class="control">
-            <input class="input" type="text" placeholder="Nhập mã thuốc" name="new_medicine_id"
-              value="{{thuoc.medicine_id}}">
-          </div>
-        </div>
-        <div class="field">
-          <label class="label">Tên thuốc</label>
-          <div class="control">
-            <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name"
-              value="{{thuoc.medicine_name}}">
-          </div>
-        </div>
+        <input class="input" type="hidden" placeholder="Nhập mã thuốc" name="new_medicine_id"
+          value="{{thuoc.medicine_id}}">
+        <div class="columns">
+          <div class="column is-7">
 
-        <div class="level">
-          <div class="level-left">
+            <div class="field">
+              <label class="label">Tên thuốc</label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name"
+                  value="{{thuoc.medicine_name}}">
+              </div>
+            </div>
+          </div>
+          <div class="column">
+
+            <label class="label">Thuốc kê đơn</label>
+            <div class="select">
+              <select name="new_medicine_prescripted">
+                <option value="yes">Kê đơn</option>
+                <option value="no">Không kê đơn</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column is-7">
             <div class="field">
               <label class="label">Giá tiền</label>
               <div class="control">
@@ -33,7 +42,7 @@
               </div>
             </div>
           </div>
-          <div class="level-right">
+          <div class="column">
             <div class="field" style="  margin-right: 120px;">
               <label class="label">Loại thuốc</label>
               <div class="control">
@@ -44,8 +53,8 @@
           </div>
         </div>
 
-        <div class="level">
-          <div class="level-left">
+        <div class="columns">
+          <div class="column is-7">
             <div class="field">
               <label class="label">Số lượng</label>
               <div class="control">
@@ -58,12 +67,18 @@
         </div>
 
 
-        <div class="field">
-          <label class="label">Vị trí </label>
-          <div class="control">
-            <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location"
-              value="{{thuoc.medicine_location}}">
+        <div class="columns">
+          <div class="column is-7">
+            <div class="field">
+              <label class="label">Vị trí </label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location"
+                  value="{{thuoc.medicine_location}}">
+              </div>
+            </div>
+
           </div>
+
         </div>
       </section>
       <footer class="modal-card-foot">

@@ -48,6 +48,7 @@
         <th><abbr title="price" style="text-decoration: none;">Giá tiền</abbr></th>
         <th><abbr title="quantity" style="text-decoration: none;">Số lượng</abbr></th>
         <th><abbr title="location" style="text-decoration: none;">Vị trí</abbr></th>
+        <th><abbr title="location" style="text-decoration: none;">Kê đơn</abbr></th>
         <th><abbr title="edit" style="text-decoration: none;"></abbr></th>
       </tr>
     </thead>
@@ -60,6 +61,11 @@
         <td>{{thuoc.medicine_price}}</td>
         <td>{{thuoc.medicine_quantity}}</td>
         <td>{{thuoc.medicine_location}}</td>
+        {%if thuoc.medicine_prescripted == true%}
+        <td>Kê đơn </td>
+        {%else%}
+        <td>Không Kê đơn </td>
+        {%endif%}
         <td style="text-align: center;"> <button class="js-modal-trigger button is-inverted is-small"
             data-target="modal-js-{{thuoc.medicine_id}}">
 
@@ -68,8 +74,8 @@
               <!-- <i class="fas fa-book"></i> -->
             </span>
           </button></td>
-          <!-- modal chỉnh sủa xóa thuốc  -->
-          {% include 'manage/medicine_edit_form.html'%}
+        <!-- modal chỉnh sủa xóa thuốc  -->
+        {% include 'manage/medicine_edit_form.html'%}
       </tr>
       {%endfor%}
     </tbody>

@@ -82,6 +82,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         new_medicine_type: String,
         new_medicine_quantity: i32,
         new_medicine_location: String,
+        new_medicine_prescripted: String,
     }
 
     #[derive(Deserialize, Debug)]
@@ -93,6 +94,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         new_medicine_type: String,
         new_medicine_quantity: i32,
         new_medicine_location: String,
+        new_medicine_prescripted: String,
     }
     #[derive(Deserialize, Debug)]
     struct MedicineDeleteForm {
@@ -115,6 +117,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
             add_form.new_medicine_quantity,
             Utc::now(),
             DateTime::from_utc(add_form.new_medicine_expire_date.and_hms(0, 0, 0), Utc),
+            add_form.new_medicine_prescripted.as_str() == "yes",
         )
         .await?;
         return Ok(Redirect::new("/manage").into());
@@ -130,6 +133,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
             edit_form.new_medicine_price,
             edit_form.new_medicine_quantity,
             edit_form.new_medicine_location,
+            edit_form.new_medicine_prescripted.as_str() == "yes",
         )
         .await?;
         return Ok(Redirect::new("/manage").into());

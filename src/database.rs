@@ -36,6 +36,7 @@ pub(crate) struct ManageMedicineTemplate {
     medicine_price: i32,
     medicine_quantity: i32,
     medicine_location: String,
+    medicine_prescripted: bool,
 }
 
 pub(crate) async fn find_drug(
@@ -50,7 +51,9 @@ pub(crate) async fn find_drug(
                 medicine_type as "medicine_type!",
                 medicine_price as "medicine_price!",
                 medicine_quantity as "medicine_quantity!",
-                location_name as "medicine_location!" 
+                location_name as "medicine_location!",
+                medicine_prescripted as "medicine_prescripted!"
+
             from medicine
             join location on location.location_id = medicine_location_id
             where (medicine_name ~* $1 and medicine_type ~* $2)
@@ -70,6 +73,7 @@ pub(crate) async fn add_drug(
     medicine_quantity: i32,
     medicine_import_date: DateTime<Utc>,
     medicine_expire_date: DateTime<Utc>,
+    medicine_prescripted: bool,
 ) -> Result<()> {
     let location_id: i32 = query!(
         r#"insert into location(location_name)
@@ -92,9 +96,10 @@ pub(crate) async fn add_drug(
                     medicine_price,
                     medicine_import_date,
                     medicine_expire_date,
-                    medicine_quantity
+                    medicine_quantity,
+                    medicine_prescripted
                 )
-                values($1, $2, $3, $4, $5, $6, $7)
+                values($1, $2, $3, $4, $5, $6, $7, $8)
                 "#,
         medicine_name,
         medicine_type,
@@ -102,7 +107,8 @@ pub(crate) async fn add_drug(
         medicine_price,
         medicine_import_date,
         medicine_expire_date,
-        medicine_quantity
+        medicine_quantity,
+        medicine_prescripted
     )
     .execute(&*DB)
     .await?;
@@ -153,6 +159,7 @@ pub(crate) async fn edit_drug(
     medicine_price: i32,
     medicine_quantity: i32,
     medicine_location: String,
+    medicine_prescripted: bool,
 ) -> Result<()> {
     let location_id: i32 = query!(
         r#"insert into location(location_name)
@@ -173,7 +180,8 @@ pub(crate) async fn edit_drug(
                     medicine_type = $3,
                     medicine_price = $4,
                     medicine_quantity = $5,
-                    medicine_location_id = $6
+                    medicine_location_id = $6,
+                    medicine_prescripted = $7
                 where medicine_id = $1
                 "#,
         medicine_id,
@@ -182,6 +190,7 @@ pub(crate) async fn edit_drug(
         medicine_price,
         medicine_quantity,
         location_id,
+        medicine_prescripted
     )
     .execute(&*DB)
     .await?;
