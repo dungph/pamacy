@@ -330,18 +330,23 @@ pub(crate) struct BillSumary {
     bill_done: bool,
     staff_name: String,
     customer_name: String,
+    bill_amount: i64,
 }
 
 pub(crate) async fn all_bill(bill_done: bool) -> Result<Vec<BillSumary>> {
     Ok(query!(
-        r#"select bill_id,
+        r#"select bill.bill_id,
                 bill_time,
                 bill_prescripted,
                 bill_done,
                 staff_fullname,
-                customer_name
+                customer_name,
+                amount_tb.amount
             from bill
             join staff on bill.staff_username = staff.staff_username
+            join ( select bill_id, SUM(medicine_bill_price * medicine_bill_quantity) as amount from medicine_bill
+                group by bill_id
+                ) amount_tb on amount_tb.bill_id = bill.bill_id
             where bill_done = $1
         "#,
         bill_done
@@ -356,6 +361,22 @@ pub(crate) async fn all_bill(bill_done: bool) -> Result<Vec<BillSumary>> {
         bill_done: obj.bill_done,
         staff_name: obj.staff_fullname,
         customer_name: obj.customer_name,
+        bill_amount: obj.amount.unwrap_or(0)
     })
     .collect())
+}
+
+pub(crate) async fn bill_amount(bill_id: i32) -> Result<Option<i64>> {
+    Ok(query!(
+        r#"
+        select SUM(medicine_bill_price * medicine_bill_quantity) as amount from medicine_bill
+            where bill_id = $1
+            group by bill_id
+        "#,
+        bill_id
+    )
+    .fetch_optional(&*DB)
+    .await?
+    .map(|o| o.amount)
+    .flatten())
 }

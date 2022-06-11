@@ -11,6 +11,7 @@
       <th><abbr title="price">Hoan thanh</abbr></th>
       <th><abbr title="quantity">Nhan vien</abbr></th>
       <th><abbr title="location">Khach hang</abbr></th>
+      <th><abbr title="amount">Tong hoa don</abbr></th>
     </tr>
   </thead>
   <tbody>
@@ -18,10 +19,21 @@
     <tr>
       <td>{{thuoc.bill_id}}</td>
       <td>{{thuoc.bill_time}}</td>
-      <td>{{thuoc.bill_prescripted}}</td>
-      <td>{{thuoc.bill_done}}</td>
+      {%if thuoc.bill_prescripted == true%}
+      <td>Kê đơn</td>
+      {%else%}
+      <td>Không kê đơn</td>
+      {%endif%}
+
+      {%if thuoc.bill_done == true%}
+      <td>Đã hoàn thành</td>
+      {%else%}
+      <td>Chưa hoàn thành</td>
+      {%endif%}
+
       <td>{{thuoc.staff_name}}</td>
       <td>{{thuoc.customer_name}}</td>
+      <td>{{thuoc.bill_amount}}</td>
     </tr>
     {%endfor%}
   </tbody>

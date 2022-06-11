@@ -13,18 +13,12 @@ static TERA: Lazy<Mutex<Tera>> =
 
 fn base_context(req: &Request<()>) -> Context {
     let mut context = Context::new();
-    let username = &req.session().get::<String>("user").unwrap_or_default();
+    let username = &req.session().get::<String>("username").unwrap_or_default();
     context.insert("staff_username", &username);
     context.insert("current_time", &Utc::now().naive_utc());
     context.insert("date", &Utc::today().naive_utc());
     context.insert(
-        "staff_id",
-        &req.session()
-            .get::<String>("id")
-            .unwrap_or_else(|| "Unknown".to_string()),
-    );
-    context.insert(
-        "staff_name",
+        "staff_fullname",
         &req.session()
             .get::<String>("fullname")
             .unwrap_or_else(|| "Unknown".to_string()),
@@ -43,7 +37,15 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
         bill_id: i32,
         staff_username: String,
         bill_prescripted: String,
+    }
+
+    #[derive(Deserialize, Debug)]
+    struct MedicineBill {
+        bill_id: i32,
+        staff_username: String,
+        bill_prescripted: String,
         medicine_id: i32,
+        medicine_price: i32,
         medicine_quantity: i32,
     }
 
@@ -54,8 +56,8 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
         customer_name: String,
     }
 
-    if let Ok(new) = dbg!(req.query::<NewBill>()) {
-        context.insert("staff_username", &new.bill_prescripted);
+    if let Ok(new) = dbg!(req.query::<MedicineBill>()) {
+        context.insert("staff_username", &new.staff_username);
         context.insert("bill_id", &new.bill_id);
         context.insert("customer_phone", &0);
         context.insert("customer_name", &"Unknown");
@@ -66,7 +68,42 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
             new.staff_username,
         )
         .await?;
-        database::add_bill_medicine(new.bill_id, new.medicine_id, 0, new.medicine_quantity).await?;
+        database::add_bill_medicine(
+            new.bill_id,
+            new.medicine_id,
+            new.medicine_price,
+            new.medicine_quantity,
+        )
+        .await?;
+        context.insert(
+            "danhsach",
+            &database::list_bill_medicine(new.bill_id).await?,
+        );
+        context.insert(
+            "bill_amount",
+            &database::bill_amount(new.bill_id).await?.unwrap_or(0),
+        );
+    } else if let Ok(new) = dbg!(req.query::<NewBill>()) {
+        context.insert("staff_username", &new.staff_username);
+        context.insert("bill_id", &new.bill_id);
+        context.insert("customer_phone", &0);
+        context.insert("customer_name", &"Unknown");
+        context.insert("bill_prescripted", &new.bill_prescripted);
+        database::update_bill(
+            new.bill_id,
+            new.bill_prescripted.as_str() == "yes",
+            new.staff_username,
+        )
+        .await?;
+
+        context.insert(
+            "danhsach",
+            &database::list_bill_medicine(new.bill_id).await?,
+        );
+        context.insert(
+            "bill_amount",
+            &database::bill_amount(new.bill_id).await?.unwrap_or(0),
+        );
     } else if let Ok(new) = dbg!(req.query::<BillInfo>()) {
         database::complete_bill(new.bill_id, new.customer_name, new.customer_phone).await?;
         return Ok(Redirect::new("/bills").into());
@@ -77,9 +114,9 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
         context.insert("bill_prescripted", &"yes".to_string());
         context.insert("customer_name", &"Qua đường".to_string());
         context.insert("customer_phone", &"0".to_string());
+        context.insert("danhsach", &database::list_bill_medicine(1).await?);
+        context.insert("bill_amount", &0);
     }
-
-    context.insert("danhsach", &database::list_bill_medicine(1).await?);
     tera.render_response("bill/new_bill.html", &context)
 }
 
