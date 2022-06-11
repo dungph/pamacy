@@ -8,8 +8,8 @@
       </header>
       <section class="modal-card-body">
 
-        <div class="columns">
-          <div class="column is-7">
+        <div class="columns is-multiline">
+          <div class="column is-5">
             <div class="field">
               <label class="label">Tên thuốc</label>
               <div class="control">
@@ -17,20 +17,17 @@
               </div>
             </div>
           </div>
-          <div class="column">
+          <div class="column is-5">
 
-          <label class="label">Thuốc kê đơn</label>
-              <div class="select">
-                <select name="new_medicine_prescripted">
-                  <option value="yes">Kê đơn</option>
-                  <option value="no">Không kê đơn</option>
-                </select>
-              </div>
+            <label class="label">Thuốc kê đơn</label>
+            <div class="select">
+              <select name="new_medicine_prescripted">
+                <option value="yes">Kê đơn</option>
+                <option value="no">Không kê đơn</option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <div class="columns">
-          <div class="column is-7">
+          <div class="column is-5">
             <div class="field">
               <label class="label">Giá tiền</label>
               <div class="control">
@@ -38,18 +35,15 @@
               </div>
             </div>
           </div>
-          <div class="column">
-            <div class="field" style="  margin-right: 120px;">
-              <label class="label">Loại thuốc</label>
+          <div class="column is-5">
+            <div class="field">
+              <label class=" label">Loại thuốc</label>
               <div class="control">
                 <input class="input" type="text" placeholder="Loại thuốc" name="new_medicine_type">
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="columns">
-          <div class="column is-7">
+          <div class="column is-5">
             <div class="field">
               <label class="label">Số lượng</label>
               <div class="control">
@@ -57,21 +51,22 @@
               </div>
             </div>
           </div>
-          <div class="column">
-            <div class="field pr-6" style="margin-right: 142px;">
+          <div class="column is-5">
+            <div class="field pr-6">
               <label class="label">Ngày hết hạn</label>
               <div class="control">
                 <input class="input" type="date" placeholder="Ngày hết hạn" name="new_medicine_expire_date">
               </div>
             </div>
           </div>
-        </div>
 
-
-        <div class="field">
-          <label class="label">Vị trí </label>
-          <div class="control">
-            <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location">
+          <div class="column is-10">
+            <div class="field">
+              <label class="label">Vị trí </label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location">
+              </div>
+            </div>
           </div>
         </div>
       </section>

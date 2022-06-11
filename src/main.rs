@@ -15,7 +15,8 @@ fn base_context(req: &Request<()>) -> Context {
     let mut context = Context::new();
     let username = &req.session().get::<String>("user").unwrap_or_default();
     context.insert("staff_username", &username);
-    context.insert("current_time", &Utc::now().to_rfc3339());
+    context.insert("current_time", &Utc::now().naive_utc());
+    context.insert("date", &Utc::today().naive_utc());
     context.insert(
         "staff_id",
         &req.session()
@@ -25,7 +26,7 @@ fn base_context(req: &Request<()>) -> Context {
     context.insert(
         "staff_name",
         &req.session()
-            .get::<String>("name")
+            .get::<String>("fullname")
             .unwrap_or_else(|| "Unknown".to_string()),
     );
     context
@@ -40,57 +41,44 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
     #[derive(Deserialize, Debug)]
     struct NewBill {
         bill_id: i32,
-        staff_id: i32,
-        date: NaiveDate,
+        staff_username: String,
         bill_prescripted: String,
-        customer_phone: String,
-        customer_name: String,
         medicine_id: i32,
         medicine_quantity: i32,
     }
 
-    #[derive(Serialize, Debug, Clone)]
+    #[derive(Deserialize, Debug, Clone)]
     struct BillInfo {
-        staff_id: i32,
-        staff_name: String,
         bill_id: i32,
-        date: NaiveDate,
-        bill_prescripted: String,
         customer_phone: String,
         customer_name: String,
     }
 
     if let Ok(new) = dbg!(req.query::<NewBill>()) {
+        context.insert("staff_username", &new.bill_prescripted);
+        context.insert("bill_id", &new.bill_id);
+        context.insert("customer_phone", &0);
+        context.insert("customer_name", &"Unknown");
+        context.insert("bill_prescripted", &new.bill_prescripted);
         database::update_bill(
             new.bill_id,
-            &new.bill_prescripted == "yes",
-            false,
-            new.staff_id,
-            new.customer_phone.clone(),
-            new.customer_name.clone(),
-            String::new(),
+            new.bill_prescripted.as_str() == "yes",
+            new.staff_username,
         )
         .await?;
-
-        context.insert("date", &Utc::today().format("%D").to_string());
-        context.insert("staff_id", &new.staff_id);
-        context.insert("bill_id", &new.bill_id);
-        context.insert("date", &new.date);
-        context.insert("customer_phone", &new.customer_phone);
-        context.insert("customer_name", &new.customer_name);
-        context.insert("bill_prescripted", &new.bill_prescripted);
-
         database::add_bill_medicine(new.bill_id, new.medicine_id, 0, new.medicine_quantity).await?;
+    } else if let Ok(new) = dbg!(req.query::<BillInfo>()) {
+        database::complete_bill(new.bill_id, new.customer_name, new.customer_phone).await?;
+        return Ok(Redirect::new("/bills").into());
     } else {
-        let bill_id = database::new_bill().await?;
-        context.insert("date", &Utc::today().format("%D").to_string());
+        let bill_id = database::new_bill(&req.session().get::<String>("username").unwrap()).await?;
         context.insert("bill_id", &bill_id);
         context.insert("staff_id", &1);
         context.insert("bill_prescripted", &"yes".to_string());
         context.insert("customer_name", &"Qua đường".to_string());
         context.insert("customer_phone", &"0".to_string());
-        context.insert("date", &Utc::today().naive_utc()); //.format("%D").to_string(),
     }
+
     context.insert("danhsach", &database::list_bill_medicine(1).await?);
     tera.render_response("bill/new_bill.html", &context)
 }
@@ -140,8 +128,11 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
     if let Ok(find_form) = req.query::<FindForm>() {
         context.insert(
             "display",
-            &database::find_drug(find_form.find_medicine_name, find_form.find_medicine_type)
-                .await?,
+            &database::find_drug(
+                find_form.find_medicine_name.as_str(),
+                find_form.find_medicine_type.as_str(),
+            )
+            .await?,
         );
     } else if let Ok(add_form) = dbg!(req.query::<MedicineAddForm>()) {
         database::add_drug(
@@ -173,10 +164,7 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
         .await?;
         return Ok(Redirect::new("/manage").into());
     } else {
-        context.insert(
-            "display",
-            &database::find_drug("".to_string(), "".to_string()).await?,
-        );
+        context.insert("display", &database::find_drug("", "").await?);
     };
 
     context.insert("medicine_type_list", &database::list_drug_type().await?);
@@ -243,10 +231,9 @@ async fn login(mut req: Request<()>) -> Result<Response> {
         Session::Login { username, password } => {
             if database::match_user(username.as_str(), password.as_str()).await? {
                 let res: Response = Redirect::new("/manage").into();
-                let (id, name) = database::get_staff_info(username.as_str()).await?;
-                req.session_mut().insert("id", id)?;
-                req.session_mut().insert("name", name)?;
-                req.session_mut().insert("user", username)?;
+                let name = database::get_staff_name(username.as_str()).await?;
+                req.session_mut().insert("fullname", name)?;
+                req.session_mut().insert("username", username)?;
                 Ok(res)
             } else {
                 let mut tera = TERA.lock().await;
@@ -276,7 +263,7 @@ fn main() -> anyhow::Result<()> {
     #[async_trait::async_trait]
     impl Middleware<()> for Auth {
         async fn handle(&self, req: Request<()>, next: tide::Next<'_, ()>) -> Result<Response> {
-            if req.session().get::<String>("user").is_some() {
+            if req.session().get::<String>("username").is_some() {
                 Ok(next.run(req).await)
             } else {
                 Ok(Redirect::new("/").into())
@@ -295,7 +282,22 @@ fn main() -> anyhow::Result<()> {
     server.at("/finance").with(Auth).get(finance);
     server.at("/customer").with(Auth).get(customer);
     server.at("/statistic").with(Auth).get(statistic);
-
+    server
+        .at("/find_drug")
+        .with(Auth)
+        .get(|req: Request<()>| async move {
+            #[derive(Deserialize)]
+            struct FindMedicine {
+                medicine_name: String,
+            }
+            let query = req.query::<FindMedicine>()?;
+            let res: Response = Response::builder(200)
+                .body(serde_json::to_value(
+                    database::find_drug(&query.medicine_name, "").await?,
+                )?)
+                .into();
+            Ok(res)
+        });
     block_on(database::migrate())?;
     Ok(block_on(server.listen("0.0.0.0:8080"))?)
 }

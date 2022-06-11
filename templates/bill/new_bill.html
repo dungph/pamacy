@@ -6,62 +6,41 @@
 <form action="" method="get">
   <div class="columns is-multiline is-vcentered">
 
-    <div class="column is-1">
-      <label class="label">Nhân viên:</label>
-    </div>
     <div class="column is-3">
+      <label class="label">Nhân viên:</label>
       <div class="control">
         <div class="select">
-          <select name="staff_id">
-            <option value="{{staff_id}}">{{staff_name}}</option>
+          <select name="staff_username">
+            <option value="{{staff_username}}">{{staff_name}}</option>
           </select>
         </div>
       </div>
     </div>
 
-    <div class="column is-1 ">
+    <div class="column  is-3">
       <label class="label">Mã HD:</label>
-    </div>
-    <div class="column is-2">
       <input class="input" type="text" placeholder="{{bill_id}}" name="bill_id" value="{{bill_id}}">
     </div>
 
-    <div class="column is-1">
+    <div class="column is-3">
       <label class="label">Ngày:</label>
-    </div>
-    <div class="column is-2">
-      <input class="input" type="date" placeholder="{{current_time}}" name="date" value="{{date}}">
+      <input class="input" type="date" name="date" value="{{date}}">
     </div>
 
 
-    <div class="control">
-      <div class="select">
-        <select name="bill_prescripted">
-          <option value="yes">Kê đơn</option>
-          <option value="no">Không kê đơn</option>
-        </select>
+    <div class="column is-3">
+      <div class="control">
+        <label class="label">Kê đơn:</label>
+        <div class="select">
+          <select name="bill_prescripted">
+            <option value="yes">Kê đơn</option>
+            <option value="no">Không kê đơn</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <div class="column is-1">
-      <label class="label">Ten KH:</label>
-    </div>
-    <div class="column is-3">
-      <input class="input" type="text" name="customer_name" placeholder="Nhập tên khách hàng" value="{{customer_name}}">
-    </div>
 
-    <div class="column is-1 ">
-      <label class="label">SDT:</label>
-    </div>
-    <div class="column is-2">
-      <input class="input" type="text" placeholder="Nhập số điện thoại" name="customer_phone"
-        value="{{customer_phone}}">
-    </div>
-
-
-    <button class="js-modal-trigger button is-info " data-target="modal-js-example">
-      Tạo hóa đơn
-    </button>
   </div>
   <div class="table-container" style="overflow: scroll; height: 400px;">
     <table class="table is-fullwidth is-hoverable is-bordered is-striped">
@@ -96,6 +75,115 @@
         </tr>
       </tbody>
     </table>
+
   </div>
 </form>
+<button class="button is-large is-inverted js-modal-trigger" style="width: 100%;" data-target="modal-js-example">
+  <span class="icon is-large">
+    <i class="fas fa-user"></i>
+  </span>
+  <span> Khách hàng </span>
+</button>
+
+
+<form action="/new_bill">
+  <div class="modal" id="modal-js-example">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Checkout</p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <input type="hidden" name="bill_id" value="{{bill_id}}">
+        <div class="columns is-multiline">
+          <div class="column is-7">
+            <div class="field">
+              <label class="label">Tên Khách hàng</label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Nhập tên" name="customer_name" value="{{customer_name}}">
+              </div>
+            </div>
+          </div>
+
+          <div class="column is-7">
+            <div class="field">
+              <label class="label">Số điện thoại</label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Số điện thoại" name="customer_phone"
+                  value="{{customer_phone}}">
+              </div>
+            </div>
+          </div>
+          <div class="column is-10">
+            <div class="field">
+              <label class="label">Địa chỉ</label>
+              <div class="control">
+                <input class="input" type="text" placeholder="Nhập vị trí" name="customer_address">
+              </div>
+            </div>
+          </div>
+
+
+      </section>
+      <footer class="modal-card-foot">
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-link" type="submit" >Hoàn tất</button>
+          </div>
+          <div class="control">
+            <button class="button is-link is-light" type="reset">Hủy</button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+</form>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Functions to open and close a modal
+    function openModal($el) {
+      $el.classList.add('is-active');
+    }
+
+    function closeModal($el) {
+      $el.classList.remove('is-active');
+    }
+
+    function closeAllModals() {
+      (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+        closeModal($modal);
+      });
+    }
+
+    // Add a click event on buttons to open a specific modal
+    (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+      const modal = $trigger.dataset.target;
+      const $target = document.getElementById(modal);
+
+      $trigger.addEventListener('click', () => {
+        openModal($target);
+      });
+    });
+
+    // Add a click event on various child elements to close the parent modal
+    (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+      const $target = $close.closest('.modal');
+
+      $close.addEventListener('click', () => {
+        closeModal($target);
+      });
+    });
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+      const e = event || window.event;
+
+      if (e.keyCode === 27) { // Escape key
+        closeAllModals();
+      }
+    });
+  });
+</script>
+
 {% endblock content %}

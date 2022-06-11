@@ -19,8 +19,8 @@ pub(crate) async fn migrate() -> Result<()> {
     sqlx::migrate!().run(&*DB).await?;
     query!(
         r#"
-        insert into staff(staff_id, staff_name, staff_username, staff_password)
-        values (1, 'Administrator', 'admin', 'admin')
+        insert into staff(staff_fullname, staff_username, staff_password)
+        values ('Administrator', 'admin', 'admin')
         on conflict (staff_username) do nothing;
         "#
     )
@@ -28,6 +28,7 @@ pub(crate) async fn migrate() -> Result<()> {
     .await?;
     Ok(())
 }
+
 #[derive(Serialize, Debug)]
 pub(crate) struct ManageMedicineTemplate {
     medicine_id: i32,
@@ -39,20 +40,17 @@ pub(crate) struct ManageMedicineTemplate {
     medicine_prescripted: bool,
 }
 
-pub(crate) async fn find_drug(
-    name: String,
-    drug_type: String,
-) -> Result<Vec<ManageMedicineTemplate>> {
+pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageMedicineTemplate>> {
     Ok(query_as!(
         ManageMedicineTemplate,
         r#"select 
                 medicine_id,
                 medicine_name,
                 medicine_type,
+                medicine_prescripted,
                 medicine_price,
                 medicine_quantity,
-                medicine_location,
-                medicine_prescripted
+                medicine_location
             from medicine
             where (medicine_name ~* $1 and medicine_type ~* $2)
             "#,
@@ -195,64 +193,39 @@ pub(crate) async fn get_customer_info(phone: &str) -> Result<(String, String)> {
     .await
     .map(|obj| (obj.customer_name, obj.customer_address))?)
 }
-pub(crate) async fn get_staff_info(username: &str) -> Result<(i32, String)> {
+pub(crate) async fn get_staff_name(username: &str) -> Result<String> {
     Ok(query!(
         r#"
-        select staff_id, staff_name from staff
+        select staff_fullname from staff
         where staff_username = $1
         "#,
         username
     )
     .fetch_one(&*DB)
     .await
-    .map(|obj| (obj.staff_id, obj.staff_name))?)
-}
-
-pub(crate) async fn new_bill() -> Result<i32> {
-    Ok(query!(
-        r#"
-            insert into bill(staff_id, customer_phone, customer_name, customer_address)
-            values (1, '0', 'Qua đường', 'Qua đường')
-            returning bill_id;
-        "#
-    )
-    .fetch_one(&*DB)
-    .await?
-    .bill_id)
+    .map(|obj| obj.staff_fullname)?)
 }
 
 pub(crate) async fn update_bill(
     bill_id: i32,
     bill_prescripted: bool,
-    bill_done: bool,
-    staff_id: i32,
-    customer_phone: String,
-    customer_name: String,
-    customer_address: String,
+    staff_username: String,
 ) -> Result<()> {
     query!(
-        r#"update bill
-            set staff_id = $2,
-            bill_prescripted = $3,
-            bill_done = $4,
-            customer_phone=$5,
-            customer_name=$6,
-            customer_address=$7
+        r#"
+        update bill
+            set staff_username = $2,
+            bill_prescripted = $3
         where bill_id = $1
         "#,
         bill_id,
-        staff_id,
+        staff_username,
         bill_prescripted,
-        bill_done,
-        customer_phone,
-        customer_name,
-        customer_address
     )
     .execute(&*DB)
     .await?;
     Ok(())
 }
-
 #[derive(Serialize, Debug, Clone)]
 pub(crate) struct BillMedicineInfo {
     medicine_id: i32,
@@ -264,18 +237,45 @@ pub(crate) struct BillMedicineInfo {
 }
 
 pub(crate) async fn list_bill_medicine(bill_id: i32) -> Result<Vec<BillMedicineInfo>> {
-    Ok(find_drug("".to_owned(), "".to_string())
-        .await?
-        .into_iter()
-        .map(|a| BillMedicineInfo {
-            medicine_id: a.medicine_id,
-            medicine_quantity: a.medicine_quantity,
-            medicine_type: a.medicine_type,
-            medicine_name: a.medicine_name,
-            medicine_price: a.medicine_price,
-            medicine_location: a.medicine_location,
-        })
-        .collect())
+    Ok(query!(
+        r#"select 
+                medicine.medicine_id,
+                medicine_bill_quantity,
+                medicine_bill_price,
+                medicine_location,
+                medicine_type,
+                medicine_name
+            from medicine_bill
+            join medicine on medicine.medicine_id = medicine_bill.medicine_id            
+            where bill_id = $1"#,
+        bill_id
+    )
+    .fetch_all(&*DB)
+    .await?
+    .into_iter()
+    .map(|a| BillMedicineInfo {
+        medicine_id: a.medicine_id,
+        medicine_quantity: a.medicine_bill_quantity,
+        medicine_type: a.medicine_type,
+        medicine_name: a.medicine_name,
+        medicine_price: a.medicine_bill_price,
+        medicine_location: a.medicine_location,
+    })
+    .collect())
+}
+
+pub(crate) async fn new_bill(username: &str) -> Result<i32> {
+    Ok(query!(
+        r#"
+            insert into bill(staff_username, customer_phone, customer_name, customer_address)
+            values ($1, '0', 'Qua đường', 'Qua đường')
+            returning bill_id;
+        "#,
+        username
+    )
+    .fetch_one(&*DB)
+    .await?
+    .bill_id)
 }
 
 pub(crate) async fn add_bill_medicine(
@@ -286,13 +286,36 @@ pub(crate) async fn add_bill_medicine(
 ) -> Result<()> {
     query!(
         r#"
-        insert into bill_medicine(bill_id, medicine_id, medicine_bill_price, medicine_bill_quantity)
+        insert into medicine_bill(bill_id, medicine_id, medicine_bill_price, medicine_bill_quantity)
         values ($1, $2, $3, $4)
         "#,
         bill_id,
         medicine_id,
         medicine_price,
         medicine_quantity
+    )
+    .execute(&*DB)
+    .await?;
+    Ok(())
+}
+
+pub(crate) async fn complete_bill(
+    bill_id: i32,
+    customer_name: String,
+    customer_phone: String,
+) -> Result<()> {
+    query!(
+        r#"
+        update bill set
+            customer_name = $2,
+            customer_phone = $3,
+            bill_done = true
+        where
+            bill_id = $1;
+        "#,
+        bill_id,
+        customer_name,
+        customer_phone
     )
     .execute(&*DB)
     .await?;
@@ -315,10 +338,10 @@ pub(crate) async fn all_bill(bill_done: bool) -> Result<Vec<BillSumary>> {
                 bill_time,
                 bill_prescripted,
                 bill_done,
-                staff_name,
+                staff_fullname,
                 customer_name
             from bill
-            join staff on bill.staff_id = staff.staff_id
+            join staff on bill.staff_username = staff.staff_username
             where bill_done = $1
         "#,
         bill_done
@@ -331,7 +354,7 @@ pub(crate) async fn all_bill(bill_done: bool) -> Result<Vec<BillSumary>> {
         bill_time: obj.bill_time.format("%D").to_string(),
         bill_prescripted: obj.bill_prescripted,
         bill_done: obj.bill_done,
-        staff_name: obj.staff_name,
+        staff_name: obj.staff_fullname,
         customer_name: obj.customer_name,
     })
     .collect())
