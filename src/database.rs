@@ -262,7 +262,11 @@ pub(crate) struct Customer {
 }
 pub(crate) async fn all_customer() -> Result<Vec<Customer>> {
     Ok(query!(
+<<<<<<< HEAD
         r#"select customer_name, customer_phone, customer_address from customer
+=======
+        r#"select distinct customer_name, customer_phone, customer_address from bill
+>>>>>>> 6301499 (them thuoc)
             order by customer_name asc;
             "#
     )

@@ -43,6 +43,7 @@
           </div>
         </div>
       </div>
+
       <div class="column">
         <div class="dropdown " id="dropdown_control">
           <div class="dropdown-trigger">
@@ -78,14 +79,24 @@
     </thead>
     <tbody>
       {%for thuoc in danhsach%}
-      <tr>
-        <td>{{thuoc.medicine_id}}</td>
-        <td>{{thuoc.medicine_name}}</td>
-        <td>{{thuoc.medicine_type}}</td>
-        <td>{{thuoc.medicine_price}}</td>
-        <td>{{thuoc.medicine_quantity}}</td>
-        <td>{{thuoc.medicine_location}}</td>
-      </tr>
+      <form action="">
+        <tr>
+          <td>{{thuoc.medicine_id}}</td>
+          <td>{{thuoc.medicine_name}}</td>
+          <td>{{thuoc.medicine_type}}</td>
+          <td> <input type="number" name="edit_medicine_price" value="{{thuoc.medicine_price}}"
+              onchange="this.form.submit()"></td>
+          <td> <input type="number" name="edit_medicine_quantity" value="{{thuoc.medicine_quantity}}"
+              onchange="this.form.submit()"></td>
+          <td>{{thuoc.medicine_location}}</td>
+          <input type="hidden" class="input" type="text" name="bill_id" value="{{bill_id}}">
+          <input type="hidden" class="input" type="text" name="staff_username" value="{{staff_username}}">
+          <input type="hidden" class="input" type="text" name="bill_prescripted" value="{{bill_prescripted}}">
+          <input type="hidden" class="input" type="text" name="edit_medicine_id" value="{{thuoc.medicine_id}}">
+        </tr>
+
+      </form>
+
       {%endfor%}
       <!--<tr>
           <td><input class="input" type="text" name="medicine_id"></td>
@@ -259,7 +270,7 @@
         ele.innerText = e.medicine_name;
         ele.id = "item-" + e.medicine_id;
         console.log(e.medicine_price);
-        ele.addEventListener("click", function () {submit_medicine(e.medicine_id, e.medicine_price)});
+        ele.addEventListener("click", function () { submit_medicine(e.medicine_id, e.medicine_price) });
         document.getElementById("dropdown_search").appendChild(ele);
       })
     }).catch(err => console.error(err));
