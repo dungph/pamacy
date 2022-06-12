@@ -324,6 +324,28 @@ pub(crate) async fn add_bill_medicine(
     .await?;
     Ok(())
 }
+pub(crate) async fn edit_bill_medicine(
+    bill_id: i32,
+    medicine_id: i32,
+    medicine_price: i32,
+    medicine_quantity: i32,
+) -> Result<()> {
+    query!(
+        r#"
+        update medicine_bill
+        set medicine_bill_price = $3,
+            medicine_bill_quantity = $4
+        where bill_id = $1 and medicine_id = $2;
+        "#,
+        bill_id,
+        medicine_id,
+        medicine_price,
+        medicine_quantity
+    )
+    .execute(&*DB)
+    .await?;
+    Ok(())
+}
 
 pub(crate) async fn complete_bill(
     bill_id: i32,

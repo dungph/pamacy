@@ -40,6 +40,16 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
     }
 
     #[derive(Deserialize, Debug)]
+    struct EditMedicineBill {
+        bill_id: i32,
+        staff_username: String,
+        bill_prescripted: String,
+        edit_medicine_id: i32,
+        edit_medicine_price: i32,
+        edit_medicine_quantity: i32,
+    }
+
+    #[derive(Deserialize, Debug)]
     struct MedicineBill {
         bill_id: i32,
         staff_username: String,
@@ -73,6 +83,28 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
             new.medicine_id,
             new.medicine_price,
             new.medicine_quantity,
+        )
+        .await?;
+        context.insert(
+            "danhsach",
+            &database::list_bill_medicine(new.bill_id).await?,
+        );
+        context.insert(
+            "bill_amount",
+            &database::bill_amount(new.bill_id).await?.unwrap_or(0),
+        );
+    } else if let Ok(new) = dbg!(req.query::<EditMedicineBill>()) {
+        context.insert("staff_username", &new.staff_username);
+        context.insert("bill_id", &new.bill_id);
+        context.insert("customer_phone", &0);
+        context.insert("customer_name", &"Unknown");
+        context.insert("bill_prescripted", &new.bill_prescripted);
+
+        database::edit_bill_medicine(
+            new.bill_id,
+            new.edit_medicine_id,
+            new.edit_medicine_price,
+            new.edit_medicine_quantity,
         )
         .await?;
         context.insert(
