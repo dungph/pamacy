@@ -182,6 +182,29 @@ pub(crate) async fn match_user(username: &str, password: &str) -> Result<bool> {
     .await?
     .is_some())
 }
+
+#[derive(Serialize)]
+pub(crate) struct Customer {
+    customer_phone: String,
+    customer_name: String,
+    customer_address: String,
+}
+pub(crate) async fn all_customer() -> Result<Vec<Customer>> {
+    Ok(query!(
+        r#"select customer_name, customer_phone, customer_address from bill
+            order by customer_name asc;
+            "#
+    )
+    .fetch_all(&*DB)
+    .await?
+    .into_iter()
+    .map(|obj| Customer {
+        customer_phone: obj.customer_phone,
+        customer_name: obj.customer_name,
+        customer_address: obj.customer_address,
+    })
+    .collect())
+}
 pub(crate) async fn get_customer_info(phone: &str) -> Result<(String, String)> {
     Ok(query!(
         r#"
