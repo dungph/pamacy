@@ -1,4 +1,24 @@
 
 {% extends "base.html" %}
 {% block content %}
+<div class="table-container" style="height:80%; overflow: scroll">
+    <table class="table is-fullwidth is-hoverable is-bordered is-striped">
+      <thead class="has-background-light" style="position: sticky; top: 0;">
+        <tr>
+          <th><abbr title="name" style="text-decoration: none;">Tên Khách Hàng</abbr></th>
+          <th><abbr title="type" style="text-decoration: none;">Số điện thoại</abbr></th>
+          <th><abbr title="price" style="text-decoration: none;">Địa chỉ</abbr></th>
+        </tr>
+      </thead>
+      <tbody>
+        {%for khachhang in display%}
+        <tr>
+          <td>{{khachhang.customer_name}}</td>
+          <td>{{khachhang.customer_phone}}</td>
+          <td>{{khachhang.customer_address}}</td>
+        </tr>
+        {%endfor%}
+      </tbody>
+    </table>
+  </div>  
 {% endblock content %}
