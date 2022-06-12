@@ -53,6 +53,7 @@ pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageM
                 medicine_location
             from medicine
             where (medicine_name ~* $1 and medicine_type ~* $2)
+            order by medicine_id asc;
             "#,
         name,
         drug_type
@@ -247,7 +248,9 @@ pub(crate) async fn list_bill_medicine(bill_id: i32) -> Result<Vec<BillMedicineI
                 medicine_name
             from medicine_bill
             join medicine on medicine.medicine_id = medicine_bill.medicine_id            
-            where bill_id = $1"#,
+            where bill_id = $1
+            order by medicine_id asc;
+            "#,
         bill_id
     )
     .fetch_all(&*DB)
@@ -348,6 +351,7 @@ pub(crate) async fn all_bill(bill_done: bool) -> Result<Vec<BillSumary>> {
                 group by bill_id
                 ) amount_tb on amount_tb.bill_id = bill.bill_id
             where bill_done = $1
+            order by bill_id asc;
         "#,
         bill_done
     )
