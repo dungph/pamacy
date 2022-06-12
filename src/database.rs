@@ -429,3 +429,23 @@ pub(crate) async fn bill_amount(bill_id: i32) -> Result<Option<i64>> {
     .map(|o| o.amount)
     .flatten())
 }
+#[derive(Serialize)]
+pub(crate) struct StaffInfo {
+    staff_fullname: String,
+    staff_username: String,
+}
+pub(crate) async fn all_staff() -> Result<Vec<StaffInfo>> {
+    Ok(query!(
+        r#"select staff_username, staff_fullname from staff
+            order by staff_username asc;
+            "#
+    )
+    .fetch_all(&*DB)
+    .await?
+    .into_iter()
+    .map(|obj| StaffInfo {
+        staff_fullname: obj.staff_fullname,
+        staff_username: obj.staff_username,
+    })
+    .collect())
+}

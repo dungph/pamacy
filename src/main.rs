@@ -255,6 +255,7 @@ async fn staff(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
     let mut context = base_context(&req);
+    context.insert("display", &database::all_staff().await?);
     tera.render_response("staff.html", &context)
 }
 async fn finance(req: Request<()>) -> Result<Response> {
