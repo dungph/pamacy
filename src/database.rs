@@ -354,6 +354,15 @@ pub(crate) async fn complete_bill(
 ) -> Result<()> {
     query!(
         r#"
+        CALL reduce_medicine_quantity($1);
+        "#,
+        bill_id
+    )
+    .execute(&*DB)
+    .await?;
+
+    query!(
+        r#"
         update bill set
             customer_name = $2,
             customer_phone = $3,

@@ -1,5 +1,7 @@
 mod database;
 
+use std::collections::HashMap;
+
 use async_std::{sync::Mutex, task::block_on};
 use chrono::{DateTime, NaiveDate, Utc};
 use once_cell::sync::Lazy;
@@ -146,7 +148,10 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
         context.insert("bill_prescripted", &"yes".to_string());
         context.insert("customer_name", &"Qua đường".to_string());
         context.insert("customer_phone", &"0".to_string());
-        context.insert("danhsach", &database::list_bill_medicine(1).await?);
+        context.insert(
+            "danhsach",
+            &database::list_bill_medicine(i32::max_value()).await?,
+        );
         context.insert("bill_amount", &0);
     }
     tera.render_response("bill/new_bill.html", &context)
