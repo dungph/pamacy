@@ -11,18 +11,15 @@
         <input class="input" type="hidden" placeholder="Nhập mã thuốc" name="new_medicine_id"
           value="{{thuoc.medicine_id}}">
         <div class="columns is-multiline">
-          <div class="column is-5">
-
+          <div class="column is-6">
             <div class="field">
               <label class="label">Tên thuốc</label>
               <div class="control">
-                <input class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name"
-                  value="{{thuoc.medicine_name}}">
+                <input  value="{{thuoc.medicine_name}}" class="input" type="text" placeholder="Nhập tên thuốc" name="new_medicine_name">
               </div>
             </div>
           </div>
-          <div class="column is-5">
-
+          <div class="column is-6">
             <label class="label">Thuốc kê đơn</label>
             <div class="select">
               <select name="new_medicine_prescripted">
@@ -31,42 +28,78 @@
               </select>
             </div>
           </div>
-          <div class="column is-5">
+          <div class="column is-6">
             <div class="field">
               <label class="label">Giá tiền</label>
               <div class="control">
-                <input class="input" type="number" placeholder="Giá tiền" name="new_medicine_price"
-                  value="{{thuoc.medicine_price}}">
+                <input  value="{{thuoc.medicine_price}}"  class="input" type="number" placeholder="Giá tiền" name="new_medicine_price">
               </div>
             </div>
           </div>
-          <div class="column">
-            <div class="field" style="  margin-right: 120px;">
-              <label class="label">Loại thuốc</label>
-              <div class="control">
-                <input class="input" type="text" placeholder="Loại thuốc" name="new_medicine_type"
-                  value="{{thuoc.medicine_type}}">
-              </div>
-            </div>
-          </div>
-          <div class="column is-5">
+      
+          <div class="column is-6">
             <div class="field">
               <label class="label">Số lượng</label>
               <div class="control">
-                <input class="input" type="number" placeholder="Nhập số lượng" name="new_medicine_quantity"
-                  value="{{thuoc.medicine_quantity}}">
+                <input  value="{{thuoc.medicine_quantity}}" class="input" type="number" placeholder="Nhập số lượng" name="new_medicine_quantity">
               </div>
             </div>
           </div>
-          <div class="column is-5">
+          <div class="column is-6">
+            <div class="field pr-6">
+              <label class="label">Ngày hết hạn</label>
+              <div class="control">
+                <input  value="{{thuoc.medicine_expire_date}}" class="input" type="date" placeholder="Ngày hết hạn" name="new_medicine_expire_date">
+              </div>
+            </div>
+          </div>
+          <div class="column is-6">
+            <div class="field">
+              <label class="label">Mã đăng ký</label>
+              <div class="control">
+                <input  value="{{thuoc.medicine_register}}" class="input" type="text" placeholder="Mã đăng ký của thốc" name="new_medicine_quantity">
+              </div>
+            </div>
+          </div>
+          <div class="column is-6">
+            <div class="field">
+              <label class="label">Đóng gói</label>
+              <div class="control">
+                <input  value="{{thuoc.medicine_route}}" class="input" type="text" placeholder="Loại đóng gói" name="new_medicine_quantity">
+              </div>
+            </div>
+          </div>
+          <div class="column is-6"> 
+            <div class="field">
+              <label class="label">Nhóm thuốc</label>
+              <div class="control">
+                <input  value="{{thuoc.medicine_group}}" class="input" type="text" placeholder="Nhóm thuốc" name="new_medicine_quantity">
+              </div>
+            </div>
+          </div>
+          <div class="column is-12">
+            <div class="field">
+              <label class="label">Đường dùng</label>
+              <div class="control">
+                <input  value="{{thuoc.medicine_route}}" class="input" type="text" placeholder="Đường Dùng (tiêm hoặc uống hoặc bôi)" name="new_medicine_quantity">
+              </div>
+            </div>
+          </div>
+          <div class="column is-12">
+            <div class="field">
+              <label class="label">Hoạt chất</label>
+              <div class="control">
+                <input  value="{{thuoc.medicine_active_ingredients}}" class="input" type="text" placeholder="Hoạt chất của thốc" name="new_medicine_quantity">
+              </div>
+            </div>
+          </div>
+          <div class="column is-12">
             <div class="field">
               <label class="label">Vị trí </label>
               <div class="control">
-                <input class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location"
-                  value="{{thuoc.medicine_location}}">
+                <input  value="{{thuoc.medicine_location}}" class="input" type="text" placeholder="Nhập vị trí" name="new_medicine_location">
               </div>
             </div>
-
           </div>
 
         </div>
@@ -76,9 +109,7 @@
           <div class="control">
             <button class="button is-link" type="submit" name="medicine_edit" value="">Chỉnh sửa</button>
           </div>
-          <div class="control">
-            <button class="button is-danger " type="submit" name="medicine_delete" value="">Xóa</button>
-          </div>
+         
           <div class="control">
             <button class="button is-link is-light" type="reset">Hủy</button>
           </div>
