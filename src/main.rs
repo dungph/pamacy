@@ -34,126 +34,126 @@ async fn new_bill(req: Request<()>) -> Result<Response> {
 
     let mut context = base_context(&req);
 
-    #[derive(Deserialize, Debug)]
-    struct NewBill {
-        bill_id: i32,
-        staff_username: String,
-        bill_prescripted: String,
-    }
+    //#[derive(Deserialize, Debug)]
+    //struct NewBill {
+    //    bill_id: i32,
+    //    staff_username: String,
+    //    bill_prescripted: String,
+    //}
 
-    #[derive(Deserialize, Debug)]
-    struct EditMedicineBill {
-        bill_id: i32,
-        staff_username: String,
-        bill_prescripted: String,
-        edit_medicine_id: i32,
-        edit_medicine_price: i32,
-        edit_medicine_quantity: i32,
-    }
+    //#[derive(Deserialize, Debug)]
+    //struct EditMedicineBill {
+    //    bill_id: i32,
+    //    staff_username: String,
+    //    bill_prescripted: String,
+    //    edit_medicine_id: i32,
+    //    edit_medicine_price: i32,
+    //    edit_medicine_quantity: i32,
+    //}
 
-    #[derive(Deserialize, Debug)]
-    struct MedicineBill {
-        bill_id: i32,
-        staff_username: String,
-        bill_prescripted: String,
-        medicine_id: i32,
-        medicine_price: i32,
-        medicine_quantity: i32,
-    }
+    //#[derive(Deserialize, Debug)]
+    //struct MedicineBill {
+    //    bill_id: i32,
+    //    staff_username: String,
+    //    bill_prescripted: String,
+    //    medicine_id: i32,
+    //    medicine_price: i32,
+    //    medicine_quantity: i32,
+    //}
 
-    #[derive(Deserialize, Debug, Clone)]
-    struct BillInfo {
-        bill_id: i32,
-        customer_phone: String,
-        customer_name: String,
-    }
+    //#[derive(Deserialize, Debug, Clone)]
+    //struct BillInfo {
+    //    bill_id: i32,
+    //    customer_phone: String,
+    //    customer_name: String,
+    //}
 
-    if let Ok(new) = dbg!(req.query::<MedicineBill>()) {
-        context.insert("staff_username", &new.staff_username);
-        context.insert("bill_id", &new.bill_id);
-        context.insert("customer_phone", &0);
-        context.insert("customer_name", &"Unknown");
-        context.insert("bill_prescripted", &new.bill_prescripted);
-        database::update_bill(
-            new.bill_id,
-            new.bill_prescripted.as_str() == "yes",
-            new.staff_username,
-        )
-        .await?;
-        database::add_bill_medicine(
-            new.bill_id,
-            new.medicine_id,
-            new.medicine_price,
-            new.medicine_quantity,
-        )
-        .await?;
-        context.insert(
-            "danhsach",
-            &database::list_bill_medicine(new.bill_id).await?,
-        );
-        context.insert(
-            "bill_amount",
-            &database::bill_amount(new.bill_id).await?.unwrap_or(0),
-        );
-    } else if let Ok(new) = dbg!(req.query::<EditMedicineBill>()) {
-        context.insert("staff_username", &new.staff_username);
-        context.insert("bill_id", &new.bill_id);
-        context.insert("customer_phone", &0);
-        context.insert("customer_name", &"Unknown");
-        context.insert("bill_prescripted", &new.bill_prescripted);
+    //if let Ok(new) = dbg!(req.query::<MedicineBill>()) {
+    //    context.insert("staff_username", &new.staff_username);
+    //    context.insert("bill_id", &new.bill_id);
+    //    context.insert("customer_phone", &0);
+    //    context.insert("customer_name", &"Unknown");
+    //    context.insert("bill_prescripted", &new.bill_prescripted);
+    //    database::update_bill(
+    //        new.bill_id,
+    //        new.bill_prescripted.as_str() == "yes",
+    //        new.staff_username,
+    //    )
+    //    .await?;
+    //    database::add_bill_medicine(
+    //        new.bill_id,
+    //        new.medicine_id,
+    //        new.medicine_price,
+    //        new.medicine_quantity,
+    //    )
+    //    .await?;
+    //    context.insert(
+    //        "danhsach",
+    //        &database::list_bill_medicine(new.bill_id).await?,
+    //    );
+    //    context.insert(
+    //        "bill_amount",
+    //        &database::bill_amount(new.bill_id).await?.unwrap_or(0),
+    //    );
+    //} else if let Ok(new) = dbg!(req.query::<EditMedicineBill>()) {
+    //    context.insert("staff_username", &new.staff_username);
+    //    context.insert("bill_id", &new.bill_id);
+    //    context.insert("customer_phone", &0);
+    //    context.insert("customer_name", &"Unknown");
+    //    context.insert("bill_prescripted", &new.bill_prescripted);
 
-        database::edit_bill_medicine(
-            new.bill_id,
-            new.edit_medicine_id,
-            new.edit_medicine_price,
-            new.edit_medicine_quantity,
-        )
-        .await?;
-        context.insert(
-            "danhsach",
-            &database::list_bill_medicine(new.bill_id).await?,
-        );
-        context.insert(
-            "bill_amount",
-            &database::bill_amount(new.bill_id).await?.unwrap_or(0),
-        );
-    } else if let Ok(new) = dbg!(req.query::<NewBill>()) {
-        context.insert("staff_username", &new.staff_username);
-        context.insert("bill_id", &new.bill_id);
-        context.insert("customer_phone", &0);
-        context.insert("customer_name", &"Unknown");
-        context.insert("bill_prescripted", &new.bill_prescripted);
-        database::update_bill(
-            new.bill_id,
-            new.bill_prescripted.as_str() == "yes",
-            new.staff_username,
-        )
-        .await?;
+    //    database::edit_bill_medicine(
+    //        new.bill_id,
+    //        new.edit_medicine_id,
+    //        new.edit_medicine_price,
+    //        new.edit_medicine_quantity,
+    //    )
+    //    .await?;
+    //    context.insert(
+    //        "danhsach",
+    //        &database::list_bill_medicine(new.bill_id).await?,
+    //    );
+    //    context.insert(
+    //        "bill_amount",
+    //        &database::bill_amount(new.bill_id).await?.unwrap_or(0),
+    //    );
+    //} else if let Ok(new) = dbg!(req.query::<NewBill>()) {
+    //    context.insert("staff_username", &new.staff_username);
+    //    context.insert("bill_id", &new.bill_id);
+    //    context.insert("customer_phone", &0);
+    //    context.insert("customer_name", &"Unknown");
+    //    context.insert("bill_prescripted", &new.bill_prescripted);
+    //    database::update_bill(
+    //        new.bill_id,
+    //        new.bill_prescripted.as_str() == "yes",
+    //        new.staff_username,
+    //    )
+    //    .await?;
 
-        context.insert(
-            "danhsach",
-            &database::list_bill_medicine(new.bill_id).await?,
-        );
-        context.insert(
-            "bill_amount",
-            &database::bill_amount(new.bill_id).await?.unwrap_or(0),
-        );
-    } else if let Ok(new) = dbg!(req.query::<BillInfo>()) {
-        database::complete_bill(new.bill_id, new.customer_name, new.customer_phone).await?;
-        return Ok(Redirect::new("/bills").into());
-    } else {
-        let bill_id = database::new_bill(&req.session().get::<String>("username").unwrap()).await?;
-        context.insert("bill_id", &bill_id);
-        context.insert("staff_id", &1);
-        context.insert("bill_prescripted", &"yes".to_string());
-        context.insert("customer_name", &"Qua đường".to_string());
-        context.insert("customer_phone", &"0".to_string());
-        context.insert(
-            "danhsach",
-            &database::list_bill_medicine(i32::max_value()).await?,
-        );
-        context.insert("bill_amount", &0);
-    }
+    //    context.insert(
+    //        "danhsach",
+    //        &database::list_bill_medicine(new.bill_id).await?,
+    //    );
+    //    context.insert(
+    //        "bill_amount",
+    //        &database::bill_amount(new.bill_id).await?.unwrap_or(0),
+    //    );
+    //} else if let Ok(new) = dbg!(req.query::<BillInfo>()) {
+    //    database::complete_bill(new.bill_id, new.customer_name, new.customer_phone).await?;
+    //    return Ok(Redirect::new("/bills").into());
+    //} else {
+    //    let bill_id = database::new_bill(&req.session().get::<String>("username").unwrap()).await?;
+    //    context.insert("bill_id", &bill_id);
+    //    context.insert("staff_id", &1);
+    //    context.insert("bill_prescripted", &"yes".to_string());
+    //    context.insert("customer_name", &"Qua đường".to_string());
+    //    context.insert("customer_phone", &"0".to_string());
+    //    context.insert(
+    //        "danhsach",
+    //        &database::list_bill_medicine(i32::max_value()).await?,
+    //    );
+    //    context.insert("bill_amount", &0);
+    //}
     tera.render_response("bill/new_bill.html", &context)
 }
 
@@ -208,35 +208,35 @@ async fn manage_page(req: Request<()>) -> Result<Response> {
             )
             .await?,
         );
-    } else if let Ok(add_form) = dbg!(req.query::<MedicineAddForm>()) {
-        database::add_drug(
-            add_form.new_medicine_name,
-            add_form.new_medicine_type,
-            add_form.new_medicine_location,
-            add_form.new_medicine_price,
-            add_form.new_medicine_quantity,
-            Utc::now(),
-            DateTime::from_utc(add_form.new_medicine_expire_date.and_hms(0, 0, 0), Utc),
-            add_form.new_medicine_prescripted.as_str() == "yes",
-        )
-        .await?;
-        return Ok(Redirect::new("/manage").into());
-    } else if let Ok(delete_form) = dbg!(req.query::<MedicineDeleteForm>()) {
-        database::delete_drug(delete_form.new_medicine_id).await?;
-        return Ok(Redirect::new("/manage").into());
-    } else if let Ok(edit_form) = dbg!(req.query::<MedicineEditForm>()) {
-        //database::edit_drug(edit_form.new_medicine_id, edit_form.new_medicine_name ).await?;
-        database::edit_drug(
-            edit_form.new_medicine_id,
-            edit_form.new_medicine_name,
-            edit_form.new_medicine_type,
-            edit_form.new_medicine_price,
-            edit_form.new_medicine_quantity,
-            edit_form.new_medicine_location,
-            edit_form.new_medicine_prescripted.as_str() == "yes",
-        )
-        .await?;
-        return Ok(Redirect::new("/manage").into());
+    //} else if let Ok(add_form) = dbg!(req.query::<MedicineAddForm>()) {
+    //    database::add_drug(
+    //        add_form.new_medicine_name,
+    //        add_form.new_medicine_type,
+    //        add_form.new_medicine_location,
+    //        add_form.new_medicine_price,
+    //        add_form.new_medicine_quantity,
+    //        Utc::now(),
+    //        DateTime::from_utc(add_form.new_medicine_expire_date.and_hms(0, 0, 0), Utc),
+    //        add_form.new_medicine_prescripted.as_str() == "yes",
+    //    )
+    //    .await?;
+    //    return Ok(Redirect::new("/manage").into());
+    //} else if let Ok(delete_form) = dbg!(req.query::<MedicineDeleteForm>()) {
+    //    database::delete_drug(delete_form.new_medicine_id).await?;
+    //    return Ok(Redirect::new("/manage").into());
+    //} else if let Ok(edit_form) = dbg!(req.query::<MedicineEditForm>()) {
+    //    //database::edit_drug(edit_form.new_medicine_id, edit_form.new_medicine_name ).await?;
+    //    database::edit_drug(
+    //        edit_form.new_medicine_id,
+    //        edit_form.new_medicine_name,
+    //        edit_form.new_medicine_type,
+    //        edit_form.new_medicine_price,
+    //        edit_form.new_medicine_quantity,
+    //        edit_form.new_medicine_location,
+    //        edit_form.new_medicine_prescripted.as_str() == "yes",
+    //    )
+    //    .await?;
+    //    return Ok(Redirect::new("/manage").into());
     } else {
         context.insert("display", &database::find_drug("", "").await?);
     };
@@ -252,7 +252,7 @@ async fn bills(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
     let mut context = base_context(&req);
-    context.insert("list_bill_sumary", &database::all_bill(true).await?);
+    //context.insert("list_bill_sumary", &database::all_bill(true).await?);
 
     tera.render_response("bill/bills.html", &context)
 }
