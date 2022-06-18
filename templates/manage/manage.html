@@ -4,7 +4,7 @@
 <p class="title is-5"><b>Danh sách thuốc</b></p>
 <div class="level">
   <div class="level-left">
-    <form action="" method="post">
+    <form action="" method="get">
       <div class="field has-addons">
         <div class="control">
           <input class="input" type="text" placeholder="Nhập Mã, Tên thuốc" name="find_medicine_name">
@@ -44,9 +44,9 @@
       <tr>
         <th><abbr title="id">ID</abbr></th>
         <th><abbr title="name" style="text-decoration: none;">Tên thuốc</abbr></th>
-        <th><abbr title="type" style="text-decoration: none;">Loại thuốc</abbr></th>
         <th><abbr title="price" style="text-decoration: none;">Giá tiền</abbr></th>
-        <th><abbr title="price" style="text-decoration: none;">Mã đăng ký</abbr></th>
+        <th><abbr title="price" style="text-decoration: none;">Mã đăng ký </abbr></th>
+        <th><abbr title="quantity" style="text-decoration: none;">Hàm lượng</abbr></th>
         <th><abbr title="quantity" style="text-decoration: none;">Hoạt chất</abbr></th>
         <th><abbr title="location" style="text-decoration: none;">Đóng gói</abbr></th>
         <th><abbr title="location" style="text-decoration: none;">Nhóm thuốc</abbr></th>
@@ -54,19 +54,19 @@
         <th><abbr title="location" style="text-decoration: none;">Số lượng</abbr></th>
         <th><abbr title="location" style="text-decoration: none;">Vị trí</abbr></th>
         <th><abbr title="location" style="text-decoration: none;">Kê đơn</abbr></th>
+        <th><abbr title="location" style="text-decoration: none;"></abbr></th>
+        
       </tr>
     </thead>
     <tbody>
       {%for thuoc in display%}
       <tr>
-        <td>{{thuoc.medicine_id}}</td>
+        <td>{{thuoc.medicine_code}}</td>
         <td>{{thuoc.medicine_name}}</td>
-        <td>{{thuoc.medicine_type}}</td>
         <td>{{thuoc.medicine_price}}</td>
         <td>{{thuoc.medicine_register}}</td>
         <td>{{thuoc.medicine_content}}</td>
         <td>{{thuoc.medicine_active_ingredients}}</td>
-        <td>{{thuoc.medicine_prescripted}}</td>
         <td>{{thuoc.medicine_pack_form}}</td>
         <td>{{thuoc.medicine_group}}</td>
         <td>{{thuoc.medicine_route}}</td>
@@ -78,7 +78,7 @@
         <td>Không Kê đơn </td>
         {%endif%}
         <td style="text-align: center;"> <button class="js-modal-trigger button is-inverted is-small"
-            data-target="modal-js-{{thuoc.medicine_id}}">
+            data-target="modal-js-{{thuoc.medicine_code}}">
 
             <span class="icon ">
               <i class="fas fa-pen-fancy"></i>
