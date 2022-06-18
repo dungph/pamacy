@@ -1,59 +1,67 @@
-CREATE TABLE public.staff (
-    staff_username text PRIMARY KEY,
-    staff_password text NOT NULL,
-    staff_fullname text NOT NULL
+create table supplier (
+    supplier_id serial primary key,
+    supplier_name text
 );
 
-CREATE TABLE public.bill (
-    bill_id serial4 PRIMARY KEY,
-    bill_time timestamptz NOT NULL DEFAULT now(),
-    bill_prescripted boolean NOT NULL default false,
-    bill_done boolean NOT NULL default false,
-    customer_phone text NOT NULL,
-    customer_name text NOT NULL,
-    customer_address text NOT NULL,
-    staff_username text NOT NULL REFERENCES staff(staff_username)
+create table staff (
+    staff_id serial primary key,
+    staff_info text,
+    staff_is_manager boolean,
+    staff_is_seller boolean,
+    staff_username text,
+    staff_password text
 );
 
-CREATE TABLE public.medicine (
-    medicine_id serial4 PRIMARY KEY,
-    medicine_name text NOT NULL,
-    medicine_type text NOT NULL,
-    medicine_prescripted boolean NOT NULL default false,
-    medicine_price int4 NOT NULL,
-    medicine_expire_date timestamptz NOT NULL default now(),
-    medicine_import_date timestamptz NOT NULL,
-    medicine_quantity int4 NOT NULL,
-    medicine_location text NOT NULL
+create table medicine_info (
+    medicine_code text primary key,
+    medicine_name text,
+    medicine_price integer,
+    medicine_register text,
+    medicine_content text,
+    medicine_active_ingredients text,
+    medicine_pack_form text,
+    medicine_group text,
+    medicine_route text,
+    medicine_locations text
 );
 
-CREATE TABLE public.medicine_bill (
-    bill_id int4 NOT NULL REFERENCES bill(bill_id),
-    medicine_id int4 NOT NULL REFERENCES medicine(medicine_id),
-    medicine_bill_price int4 NOT NULL,
-    medicine_bill_quantity int4 NOT NULL
+create table medicine (
+    medicine_id serial primary key,
+    medicine_expire_date timestamptz,
+    medicine_code text references medicine_info(medicine_code),
+    supplier_id integer references supplier(supplier_id)
 );
 
+create table inventory_bill(
+    inventory_bill_id serial primary key, 
+    inventory_bill_time timestamptz,
+    inventory_bill_complete boolean,
+    staff_id integer references staff(staff_id)
+);
 
-CREATE PROCEDURE reduce_medicine_quantity(bid integer)
-LANGUAGE PLPGSQL
-AS $$
-    declare
-        rec record;
-        new_quan int4;
-    begin
-        for rec in 
-        select medicine_id as medicine_bill_id, medicine_bill_quantity from medicine_bill
-        where bill_id = bid
-        loop
-            update medicine 
-                set medicine_quantity = medicine_quantity - medicine_bill_quantity
-            where medicine.medicine_id = rec.medicine_bill_id
-            returning medicine_quantity into new_quan;
-            if new_quan < 0 then
-                ROLLBACK;
-            end if;
-        end loop;
-        COMMIT;
-    end;
-$$;
+create table medicine_inventory_bill (
+    inventory_bill_id  integer references inventory_bill(inventory_bill_id),
+    medicine_id integer references medicine(medicine_id),
+    medicine_inventory_price integer,
+    medicine_inventory_quantity integer
+);
+
+create table customer (
+    customer_id serial primary key, 
+    customer_name text, 
+    customer_age text,
+    customer_gender text,
+    customer_phone text, 
+    customer_address text
+);
+
+create table sell_bill (
+    sell_bill_id serial primary key, 
+    sell_bill_receive integer, 
+    sraff_id integer references staff(staff_id), 
+    inventory_bill_id integer references inventory_bill(inventory_bill_id), 
+    discout integer,
+    customer_id integer references customer(customer_id),
+    customer_citizen_id text,
+    is_prescripted boolean check ((is_prescripted = false) OR customer_citizen_id is not null)
+);
