@@ -6,6 +6,7 @@ use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use sqlx::{query, query_as, PgPool};
+use tide::{Response, Status};
 
 static DB: Lazy<PgPool> = Lazy::new(|| {
     PgPool::connect_lazy(
@@ -64,7 +65,8 @@ pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<Medicin
             from medicine_info
             join medicine on medicine.medicine_code = medicine_info.medicine_code
             join medicine_inventory_bill on medicine_inventory_bill.medicine_id = medicine.medicine_id
-            where (medicine_name ~* $1 and medicine_group ~* $2)
+            join inventory_bill on inventory_bill.inventory_bill_id = medicine_inventory_bill.inventory_bill_id
+            where (medicine_name ~* $1 and medicine_group ~* $2 and inventory_bill_complete)
             group by (
                 medicine.medicine_code,
                 medicine_name, 
@@ -410,8 +412,9 @@ pub(crate) async fn list_bill_medicine(bill_id: i32) -> Result<Vec<MedicineInfo>
             from medicine_info
             join medicine on medicine.medicine_code = medicine_info.medicine_code
             join medicine_inventory_bill on medicine_inventory_bill.medicine_id = medicine.medicine_id
+            join inventory_bill on inventory_bill.inventory_bill_id = medicine_inventory_bill.inventory_bill_id
             join sell_bill on sell_bill.inventory_bill_id = medicine_inventory_bill.inventory_bill_id
-            where (sell_bill_id = $1)
+            where (sell_bill_id = $1 and inventory_bill_complete)
             group by (
                 medicine.medicine_code,
                 medicine_name, 
@@ -447,96 +450,181 @@ pub(crate) async fn bill_amount(bill_id: i32) -> Result<Option<i64>> {
     .and_then(|o| o.amount))
 }
 
-//pub(crate) async fn bill_info()
+pub(crate) async fn add_bill_medicine(bill_id: i32, medicine_code: String) -> Result<()> {
+    let inventory_bill_id = query!(
+        r#"
+        select inventory_bill_id from sell_bill
+        where sell_bill_id = $1
+        "#,
+        bill_id
+    )
+    .fetch_one(&*DB)
+    .await?
+    .inventory_bill_id;
 
-//pub(crate) async fn new_bill(username: &str) -> Result<i32> {
-//    Ok(query!(
-//        r#"
-//            insert into bill(staff_username, customer_phone, customer_name, customer_address)
-//            values ($1, '0', 'Qua đường', 'Qua đường')
-//            returning bill_id;
-//        "#,
-//        username
-//    )
-//    .fetch_one(&*DB)
-//    .await?
-//    .bill_id)
-//}
-//
-//pub(crate) async fn add_bill_medicine(
-//    bill_id: i32,
-//    medicine_id: i32,
-//    medicine_price: i32,
-//    medicine_quantity: i32,
-//) -> Result<()> {
-//    query!(
-//        r#"
-//        insert into medicine_bill(bill_id, medicine_id, medicine_bill_price, medicine_bill_quantity)
-//        values ($1, $2, $3, $4)
-//        "#,
-//        bill_id,
-//        medicine_id,
-//        medicine_price,
-//        medicine_quantity
-//    )
-//    .execute(&*DB)
-//    .await?;
-//    Ok(())
-//}
-//pub(crate) async fn edit_bill_medicine(
-//    bill_id: i32,
-//    medicine_id: i32,
-//    medicine_price: i32,
-//    medicine_quantity: i32,
-//) -> Result<()> {
-//    query!(
-//        r#"
-//        update medicine_bill
-//        set medicine_bill_price = $3,
-//            medicine_bill_quantity = $4
-//        where bill_id = $1 and medicine_id = $2;
-//        "#,
-//        bill_id,
-//        medicine_id,
-//        medicine_price,
-//        medicine_quantity
-//    )
-//    .execute(&*DB)
-//    .await?;
-//    Ok(())
-//}
+    let vec: Vec<(i32, i32, i64)> = query!(
+        r#"
+        select medicine.medicine_id, medicine_price, sum(medicine_inventory_quantity) as medicine_quantity 
+        from medicine_inventory_bill
+        join medicine on medicine.medicine_id = medicine_inventory_bill.medicine_id
+        join medicine_info on medicine.medicine_code = medicine_info.medicine_code
+        join inventory_bill on inventory_bill.inventory_bill_id = medicine_inventory_bill.inventory_bill_id
+        where medicine.medicine_code = $1 and inventory_bill_complete
+        group by (medicine.medicine_id, medicine_price)
+        having sum(medicine_inventory_quantity) > 0
+        "#,
+        medicine_code,
+    )
+    .fetch_all(&*DB)
+    .await?
+    .into_iter()
+    .map(|obj| (obj.medicine_id, obj.medicine_price, obj.medicine_quantity.unwrap_or(0)))
+    .collect();
 
-//pub(crate) async fn complete_bill(
-//    bill_id: i32,
-//    customer_name: String,
-//    customer_phone: String,
-//) -> Result<()> {
-//    query!(
-//        r#"
-//        CALL reduce_medicine_quantity($1);
-//        "#,
-//        bill_id
-//    )
-//    .execute(&*DB)
-//    .await?;
-//
-//    query!(
-//        r#"
-//        update bill set
-//            customer_name = $2,
-//            customer_phone = $3,
-//            bill_done = true
-//        where
-//            bill_id = $1;
-//        "#,
-//        bill_id,
-//        customer_name,
-//        customer_phone
-//    )
-//    .execute(&*DB)
-//    .await?;
-//    Ok(())
-//}
+    if let Some(medicine) = vec.iter().next() {
+        query!(
+            r#"
+            insert into medicine_inventory_bill(
+                inventory_bill_id,
+                medicine_id,
+                medicine_inventory_price,
+                medicine_inventory_quantity
+            )
+            values ($1, $2, $3, -1)
+            "#,
+            inventory_bill_id,
+            medicine.0,
+            medicine.1
+        )
+        .execute(&*DB)
+        .await?;
+    } else {
+        return Err(anyhow::anyhow!("not have that medicine"));
+    }
+    Ok(())
+}
+
+pub(crate) async fn edit_bill_medicine(
+    bill_id: i32,
+    medicine_code: &str,
+    medicine_price: i32,
+    medicine_quantity: i32,
+) -> Result<()> {
+    let inventory_bill_id = query!(
+        r#"
+        select inventory_bill_id from sell_bill
+        where sell_bill_id = $1
+        "#,
+        bill_id
+    )
+    .fetch_one(&*DB)
+    .await?
+    .inventory_bill_id;
+
+    let vec: Vec<(i32, i32, i64)> = query!(
+        r#"
+        select medicine.medicine_id, medicine_price, sum(medicine_inventory_quantity) as medicine_quantity 
+        from medicine_inventory_bill
+        join medicine on medicine.medicine_id = medicine_inventory_bill.medicine_id
+        join medicine_info on medicine.medicine_code = medicine_info.medicine_code
+        join inventory_bill on inventory_bill.inventory_bill_id = medicine_inventory_bill.inventory_bill_id
+        where medicine.medicine_code = $1 and inventory_bill_complete
+        group by (medicine.medicine_id, medicine_price)
+        having sum(medicine_inventory_quantity) > 0
+        "#,
+        medicine_code,
+    )
+    .fetch_all(&*DB)
+    .await?
+    .into_iter()
+    .map(|obj| (obj.medicine_id, obj.medicine_price, obj.medicine_quantity.unwrap_or(0)))
+    .collect();
+
+    for info in vec.iter() {
+        query!(
+            r#"
+            delete from medicine_inventory_bill
+            where inventory_bill_id = $1 and medicine_id = $2
+            "#,
+            inventory_bill_id,
+            info.0
+        )
+        .execute(&*DB)
+        .await?;
+    }
+    if vec.iter().map(|info| info.2).sum::<i64>() < medicine_quantity.into() {
+        return Err(anyhow::anyhow!("Not enough"));
+    }
+
+    let mut insert: i64 = medicine_quantity.into();
+    let mut vec_iter = vec.iter();
+    while insert > 0 {
+        let info = vec_iter.next().unwrap();
+        query!(
+            r#"
+            insert into medicine_inventory_bill(
+                inventory_bill_id,
+                medicine_id,
+                medicine_inventory_price,
+                medicine_inventory_quantity
+            ) values ($1, $2, $3, $4)
+            "#,
+            inventory_bill_id,
+            info.0,
+            medicine_price,
+            if info.2 < medicine_quantity.into() {
+                insert -= info.2;
+                info.2 as i32
+            } else {
+                medicine_quantity
+            }
+        )
+        .execute(&*DB)
+        .await?;
+    }
+    Ok(())
+}
+
+pub(crate) async fn complete_bill(
+    bill_id: i32,
+    customer_name: String,
+    customer_phone: String,
+) -> Result<()> {
+    let customer_id = query!(
+        r#"
+        insert into customer (customer_name, customer_phone)
+        values ($1, $2)
+        returning customer_id;
+        "#,
+        customer_name,
+        customer_phone
+    )
+    .fetch_one(&*DB)
+    .await?
+    .customer_id;
+
+    let inventory_bill_id = query!(
+        r#"
+        select inventory_bill_id from sell_bill
+        where sell_bill_id = $1
+        "#,
+        bill_id
+    )
+    .fetch_one(&*DB)
+    .await?
+    .inventory_bill_id;
+    query!(
+        r#"
+        update inventory_bill
+        set inventory_bill_complete = true
+        where inventory_bill_id = $1;
+        "#,
+        inventory_bill_id,
+    )
+    .execute(&*DB)
+    .await?;
+    Ok(())
+}
 
 #[derive(Serialize, Debug)]
 pub(crate) struct BillSumary {

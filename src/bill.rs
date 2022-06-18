@@ -21,7 +21,9 @@ pub(crate) async fn new_bill(req: Request<()>) -> Result<Response> {
     let bill_info = if let Some(bill_id) = bill_id {
         database::get_bill(bill_id).await?
     } else {
-        database::new_bill(req.session().get::<String>("username").unwrap().as_str()).await?
+        let info =
+            database::new_bill(req.session().get::<String>("username").unwrap().as_str()).await?;
+        return Ok(Redirect::new(format!("/new_bill?bill_id={}", info.bill_id)).into());
     };
 
     context.insert("bill_id", &bill_info.bill_id);
@@ -132,55 +134,40 @@ pub(crate) async fn edit_info(req: Request<()>) -> Result<Response> {
         bill_prescripted: String,
     }
     let new_info = req.query::<NewBill>()?;
+    database::update_bill(
+        new_info.bill_id,
+        new_info.bill_prescripted == "yes",
+        new_info.staff_username,
+    )
+    .await?;
 
     Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
 }
 pub(crate) async fn add_medicine(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-
-    #[derive(Deserialize, Debug)]
-    struct EditMedicineBill {
-        bill_id: i32,
-        medicine_id: i32,
-        medicine_quantity: i32,
-    }
-
-    let mut context = base_context(&req);
-    tera.render_response("bill/new_bill.html", &context)
-}
-pub(crate) async fn edit_price(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-
-    #[derive(Deserialize, Debug)]
-    struct EditMedicineBill {
-        bill_id: i32,
-        medicine_id: i32,
-        medicine_quantity: i32,
-    }
-
-    let mut context = base_context(&req);
-    tera.render_response("bill/new_bill.html", &context)
-}
-pub(crate) async fn edit_quantity(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-
     #[derive(Deserialize, Debug)]
     struct MedicineBill {
         bill_id: i32,
-        medicine_id: i32,
+        medicine_code: String,
+    }
+
+    let new_info = req.query::<MedicineBill>()?;
+    database::add_bill_medicine(new_info.bill_id, new_info.medicine_code).await?;
+    Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
+}
+pub(crate) async fn edit_price_quantity(req: Request<()>) -> Result<Response> {
+    #[derive(Deserialize, Debug)]
+    struct EditMedicine {
+        bill_id: i32,
+        medicine_code: String,
+        medicine_price: i32,
         medicine_quantity: i32,
     }
 
-    let mut context = base_context(&req);
-    tera.render_response("bill/new_bill.html", &context)
+    let new_info = req.query::<EditMedicine>()?;
+    database::add_bill_medicine(new_info.bill_id, new_info.medicine_code).await?;
+    Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
 }
 pub(crate) async fn complete(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-
     #[derive(Deserialize, Debug, Clone)]
     struct BillInfo {
         bill_id: i32,
@@ -188,6 +175,12 @@ pub(crate) async fn complete(req: Request<()>) -> Result<Response> {
         customer_name: String,
     }
 
-    let mut context = base_context(&req);
-    tera.render_response("bill/new_bill.html", &context)
+    let new_info = req.query::<BillInfo>()?;
+    database::complete_bill(
+        new_info.bill_id,
+        new_info.customer_name,
+        new_info.customer_phone,
+    )
+    .await?;
+    Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
 }
