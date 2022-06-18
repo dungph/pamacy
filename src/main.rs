@@ -151,8 +151,8 @@ fn main() -> anyhow::Result<()> {
     tide.at("/new_bill/complete").with(Auth).get(bill::complete);
 
     tide.at("/manage").with(Auth).get(manage::manage_page);
-    tide.at("/manage/edit").with(Auth).get(manage::add_medicine);
-    tide.at("/manage/add").with(Auth).get(manage::edit_medicine);
+    tide.at("/manage/add_medicine").with(Auth).get(manage::add_medicine);
+    tide.at("/manage/edit_medicine").with(Auth).get(manage::edit_medicine);
 
     tide.at("/staff").with(Auth).get(staff);
     tide.at("/bills").with(Auth).get(bills);

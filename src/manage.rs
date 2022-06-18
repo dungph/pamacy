@@ -75,7 +75,7 @@ pub(crate) async fn add_medicine(req: Request<()>) -> Result<Response> {
         return Ok(Redirect::new("/manage").into());
     } else {
     }
-    tera.render_response("bill/bills.html", &context)
+    tera.render_response("manage/manage.html", &context)
 }
 
 pub(crate) async fn edit_medicine(req: Request<()>) -> Result<Response> {
@@ -120,5 +120,5 @@ pub(crate) async fn edit_medicine(req: Request<()>) -> Result<Response> {
         return Ok(Redirect::new("/manage").into());
     } else {
     }
-    tera.render_response("bill/bills.html", &context)
+    tera.render_response("manage/manage.html", &context)
 }
