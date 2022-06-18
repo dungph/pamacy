@@ -37,10 +37,6 @@ pub(crate) async fn manage_page(req: Request<()>) -> Result<Response> {
 }
 
 pub(crate) async fn add_medicine(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = base_context(&req);
-
     #[derive(Deserialize, Debug)]
     struct MedicineAddForm {
         medicine_code: String,
@@ -56,34 +52,27 @@ pub(crate) async fn add_medicine(req: Request<()>) -> Result<Response> {
         medicine_location: String,
         medicine_prescripted: String,
     }
-    if let Ok(add_form) = dbg!(req.query::<MedicineAddForm>()) {
-        database::add_drug(
-            add_form.medicine_code,
-            add_form.medicine_name,
-            add_form.medicine_price,
-            add_form.medicine_register,
-            add_form.medicine_content,
-            add_form.medicine_active_ingredients,
-            add_form.medicine_pack_form,
-            add_form.medicine_group,
-            add_form.medicine_route,
-            add_form.medicine_quantity,
-            add_form.medicine_location,
-            add_form.medicine_prescripted.as_str() == "yes",
-        )
-        .await?;
-        return Ok(Redirect::new("/manage").into());
-    } else {
-    }
-    tera.render_response("manage/manage.html", &context)
+
+    let add_form = dbg!(req.query::<MedicineAddForm>()?);
+    database::add_drug(
+        add_form.medicine_code,
+        add_form.medicine_name,
+        add_form.medicine_price,
+        add_form.medicine_register,
+        add_form.medicine_content,
+        add_form.medicine_active_ingredients,
+        add_form.medicine_pack_form,
+        add_form.medicine_group,
+        add_form.medicine_route,
+        add_form.medicine_quantity,
+        add_form.medicine_location,
+        add_form.medicine_prescripted.as_str() == "yes",
+    )
+    .await?;
+    Ok(Redirect::new("/manage").into())
 }
 
 pub(crate) async fn edit_medicine(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-    let mut context = base_context(&req);
-    //context.insert("list_bill_sumary", &database::all_bill(true).await?);
-
     #[derive(Deserialize, Debug)]
     struct MedicineEditForm {
         medicine_code: String,
@@ -100,25 +89,21 @@ pub(crate) async fn edit_medicine(req: Request<()>) -> Result<Response> {
         medicine_prescripted: String,
     }
 
-    if let Ok(edit_form) = dbg!(req.query::<MedicineEditForm>()) {
-        //database::edit_drug(edit_form.new_medicine_id, edit_form.new_medicine_name ).await?;
-        database::edit_drug(
-            edit_form.medicine_code,
-            edit_form.medicine_name,
-            edit_form.medicine_price,
-            edit_form.medicine_register,
-            edit_form.medicine_content,
-            edit_form.medicine_active_ingredients,
-            edit_form.medicine_pack_form,
-            edit_form.medicine_group,
-            edit_form.medicine_route,
-            edit_form.medicine_quantity,
-            edit_form.medicine_location,
-            edit_form.medicine_prescripted.as_str() == "yes",
-        )
-        .await?;
-        return Ok(Redirect::new("/manage").into());
-    } else {
-    }
-    tera.render_response("manage/manage.html", &context)
+    let edit_form = dbg!(req.query::<MedicineEditForm>())?;
+    database::edit_drug(
+        edit_form.medicine_code,
+        edit_form.medicine_name,
+        edit_form.medicine_price,
+        edit_form.medicine_register,
+        edit_form.medicine_content,
+        edit_form.medicine_active_ingredients,
+        edit_form.medicine_pack_form,
+        edit_form.medicine_group,
+        edit_form.medicine_route,
+        edit_form.medicine_quantity,
+        edit_form.medicine_location,
+        edit_form.medicine_prescripted.as_str() == "yes",
+    )
+    .await?;
+    Ok(Redirect::new("/manage").into())
 }

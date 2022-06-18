@@ -2,8 +2,6 @@ mod bill;
 mod database;
 mod manage;
 
-use std::collections::HashMap;
-
 use async_std::{sync::Mutex, task::block_on};
 use chrono::{DateTime, NaiveDate, Utc};
 use once_cell::sync::Lazy;
@@ -11,8 +9,6 @@ use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 use tide::{Middleware, Redirect, Request, Response, Result};
 use tide_tera::TideTeraExt;
-
-use crate::bill::new_bill;
 
 pub static TERA: Lazy<Mutex<Tera>> =
     Lazy::new(|| Mutex::new(Tera::new("templates/**/*.html").unwrap()));
@@ -35,7 +31,7 @@ pub(crate) fn base_context(req: &Request<()>) -> Context {
 async fn bills(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
-    let mut context = base_context(&req);
+    let context = base_context(&req);
     //context.insert("list_bill_sumary", &database::all_bill(true).await?);
 
     tera.render_response("bill/bills.html", &context)
@@ -50,7 +46,7 @@ async fn staff(req: Request<()>) -> Result<Response> {
 async fn finance(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
-    let mut context = base_context(&req);
+    let context = base_context(&req);
     tera.render_response("finance.html", &context)
 }
 async fn customer(req: Request<()>) -> Result<Response> {
@@ -63,7 +59,7 @@ async fn customer(req: Request<()>) -> Result<Response> {
 async fn statistic(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
-    let mut context = base_context(&req);
+    let context = base_context(&req);
     tera.render_response("statistic.html", &context)
 }
 async fn index(req: Request<()>) -> Result<Response> {
@@ -72,7 +68,7 @@ async fn index(req: Request<()>) -> Result<Response> {
     } else {
         let mut tera = TERA.lock().await;
         tera.full_reload()?;
-        let mut context = Context::new();
+        let context = Context::new();
 
         tera.render_response("index.html", &context)
     }
@@ -103,7 +99,7 @@ async fn login(mut req: Request<()>) -> Result<Response> {
                 tera.render_response("index.html", &context)
             }
         }
-        Session::Logout { username } => {
+        Session::Logout { username: _ } => {
             req.session_mut().destroy();
             Ok(Redirect::new("/").into())
         }
@@ -151,8 +147,12 @@ fn main() -> anyhow::Result<()> {
     tide.at("/new_bill/complete").with(Auth).get(bill::complete);
 
     tide.at("/manage").with(Auth).get(manage::manage_page);
-    tide.at("/manage/add_medicine").with(Auth).get(manage::add_medicine);
-    tide.at("/manage/edit_medicine").with(Auth).get(manage::edit_medicine);
+    tide.at("/manage/add_medicine")
+        .with(Auth)
+        .get(manage::add_medicine);
+    tide.at("/manage/edit_medicine")
+        .with(Auth)
+        .get(manage::edit_medicine);
 
     tide.at("/staff").with(Auth).get(staff);
     tide.at("/bills").with(Auth).get(bills);

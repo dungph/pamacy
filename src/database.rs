@@ -30,7 +30,7 @@ pub(crate) async fn migrate() -> Result<()> {
 }
 
 #[derive(Serialize, Debug)]
-pub(crate) struct ManageMedicineTemplate {
+pub(crate) struct MedicineInfo {
     medicine_code: String,
     medicine_name: String,
     medicine_price: i32,
@@ -45,9 +45,9 @@ pub(crate) struct ManageMedicineTemplate {
     medicine_prescripted: bool,
 }
 
-pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageMedicineTemplate>> {
+pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<MedicineInfo>> {
     Ok(query_as!(
-        ManageMedicineTemplate,
+        MedicineInfo,
         r#"
             select medicine.medicine_code as "medicine_code!",
                 medicine_name as "medicine_name!",
@@ -87,6 +87,7 @@ pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageM
 }
 
 pub(crate) async fn add_drug(
+    staff_username: &str,
     medicine_code: String,
     medicine_name: String,
     medicine_price: i32,
@@ -147,10 +148,11 @@ pub(crate) async fn add_drug(
 
     let bill_id = query!(
         r#"
-        insert into inventory_bill(inventory_bill_complete)
-        values (true)
+        insert into inventory_bill(inventory_bill_complete, staff_username)
+        values (true, $1)
         returning inventory_bill_id
-        "#
+        "#,
+        staff_username
     )
     .fetch_one(&*DB)
     .await?
@@ -300,68 +302,125 @@ pub(crate) async fn get_staff_name(username: &str) -> Result<String> {
     .await
     .map(|obj| obj.staff_fullname)?)
 }
+pub(crate) async fn new_bill(username: &str) -> Result<i32> {
+    let inventory_bill_id = query!(
+        r#"
+        insert into inventory_bill(staff_username)
+        values ($1)
+        returning inventory_bill_id;
+        "#,
+        username
+    )
+    .fetch_one(&*DB)
+    .await?
+    .inventory_bill_id;
+
+    let bill_id = query!(
+        r#"
+        insert into sell_bill(staff_username, inventory_bill_id, is_prescripted)
+        values ($1, $2, $3)
+        returning sell_bill_id;;;;
+        "#,
+        username,
+        inventory_bill_id,
+        false,
+    )
+    .fetch_one(&*DB)
+    .await?
+    .sell_bill_id;
+
+    Ok(bill_id)
+}
 
 pub(crate) async fn update_bill(
     bill_id: i32,
     bill_prescripted: bool,
     staff_username: String,
 ) -> Result<()> {
-    query!(
+    let inventory_bill_id = query!(
         r#"
         update sell_bill
-            set staff_username = $2,
-            is_prescripted = $3
+        set staff_username = $2, is_prescripted = $3
         where sell_bill_id = $1
+        returning inventory_bill_id
         "#,
         bill_id,
         staff_username,
-        bill_prescripted,
+        bill_prescripted
+    )
+    .fetch_one(&*DB)
+    .await?
+    .inventory_bill_id;
+
+    query!(
+        r#"
+        update inventory_bill
+        set staff_username = $2
+        where inventory_bill_id = $1
+        "#,
+        inventory_bill_id,
+        staff_username,
     )
     .execute(&*DB)
     .await?;
     Ok(())
 }
 
-//#[derive(Serialize, Debug, Clone)]
-//pub(crate) struct BillMedicineInfo {
-//    medicine_id: i32,
-//    medicine_quantity: i32,
-//    medicine_type: String,
-//    medicine_name: String,
-//    medicine_price: i32,
-//    medicine_location: String,
-//}
-//
-//pub(crate) async fn list_bill_medicine(bill_id: i32) -> Result<Vec<BillMedicineInfo>> {
-//    Ok(query!(
-//        r#"select
-//                medicine.medicine_id,
-//                medicine_bill_quantity,
-//                medicine_bill_price,
-//                medicine_location,
-//                medicine_type,
-//                medicine_name
-//            from medicine_bill
-//            join medicine on medicine.medicine_id = medicine_bill.medicine_id
-//            where bill_id = $1
-//            order by medicine_id asc;
-//            "#,
-//        bill_id
-//    )
-//    .fetch_all(&*DB)
-//    .await?
-//    .into_iter()
-//    .map(|a| BillMedicineInfo {
-//        medicine_id: a.medicine_id,
-//        medicine_quantity: a.medicine_bill_quantity,
-//        medicine_type: a.medicine_type,
-//        medicine_name: a.medicine_name,
-//        medicine_price: a.medicine_bill_price,
-//        medicine_location: a.medicine_location,
-//    })
-//    .collect())
-//}
-//
+pub(crate) async fn list_bill_medicine(bill_id: i32) -> Result<Vec<MedicineInfo>> {
+    Ok(query_as!(
+        MedicineInfo,
+        r#"
+            select medicine.medicine_code as "medicine_code!",
+                medicine_name as "medicine_name!",
+                medicine_price as "medicine_price!",
+                medicine_register as "medicine_register!",
+                medicine_content as "medicine_content!",
+                medicine_active_ingredients as "medicine_active_ingredients!",
+                medicine_prescripted as "medicine_prescripted!",
+                medicine_pack_form as "medicine_pack_form!",
+                medicine_group as "medicine_group!",
+                medicine_route as "medicine_route!",
+                medicine_locations as "medicine_location!",
+                SUM(medicine_inventory_quantity) as medicine_quantity
+            from medicine_info
+            join medicine on medicine.medicine_code = medicine_info.medicine_code
+            join medicine_inventory_bill on medicine_inventory_bill.medicine_id = medicine.medicine_id
+            join sell_bill on sell_bill.inventory_bill_id = medicine_inventory_bill.inventory_bill_id
+            where (sell_bill_id = $1)
+            group by (
+                medicine.medicine_code,
+                medicine_name, 
+                medicine_price,
+                medicine_register,
+                medicine_content,
+                medicine_active_ingredients,
+                medicine_prescripted,
+                medicine_pack_form,
+                medicine_group,
+                medicine_locations,
+                medicine_route
+                )
+            "#,
+            bill_id
+    )
+    .fetch_all(&*DB)
+    .await?)
+}
+
+pub(crate) async fn bill_amount(bill_id: i32) -> Result<Option<i64>> {
+    Ok(query!(
+        r#"
+        select SUM(medicine_inventory_price * medicine_inventory_quantity) as amount from medicine_inventory_bill
+        join sell_bill on sell_bill.inventory_bill_id = medicine_inventory_bill.inventory_bill_id
+            where sell_bill_id = $1
+            group by sell_bill_id
+        "#,
+        bill_id
+    )
+    .fetch_optional(&*DB)
+    .await?
+    .and_then(|o| o.amount))
+}
 //pub(crate) async fn new_bill(username: &str) -> Result<i32> {
 //    Ok(query!(
 //        r#"

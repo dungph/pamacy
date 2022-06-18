@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tide::{Redirect, Request, Response, Result};
 use tide_tera::TideTeraExt;
 
-use crate::{base_context, TERA};
+use crate::{base_context, database, TERA};
 
 pub(crate) async fn new_bill(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
@@ -10,12 +10,36 @@ pub(crate) async fn new_bill(req: Request<()>) -> Result<Response> {
 
     let mut context = base_context(&req);
 
-    #[derive(Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug)]
     struct NewBill {
         bill_id: Option<i32>,
         staff_username: Option<String>,
         bill_prescripted: Option<String>,
     }
+
+    let NewBill {
+        bill_id,
+        staff_username,
+        bill_prescripted,
+    } = req.query()?;
+    context.insert("bill_id", &bill_id);
+    context.insert("staff_username", &staff_username);
+    context.insert("bill_prescripted", &bill_prescripted);
+
+    let bill_id = if let Some(bill_id) = bill_id {
+        bill_id
+    } else {
+        database::new_bill(
+            req.session()
+                .get::<String>("staff_username")
+                .unwrap()
+                .as_str(),
+        )
+        .await?
+    };
+
+    context.insert("danhsach", &database::list_bill_medicine(bill_id).await?);
+    context.insert("bill_amount", &database::bill_amount(bill_id).await?);
 
     //if let Ok(new) = dbg!(req.query::<MedicineBill>()) {
     //    context.insert("staff_username", &new.staff_username);
@@ -107,18 +131,15 @@ pub(crate) async fn new_bill(req: Request<()>) -> Result<Response> {
 }
 
 pub(crate) async fn edit_info(req: Request<()>) -> Result<Response> {
-    let mut tera = TERA.lock().await;
-    tera.full_reload()?;
-
     #[derive(Deserialize, Debug)]
     struct NewBill {
         bill_id: i32,
         staff_username: String,
         bill_prescripted: String,
     }
+    let new_info = req.query::<NewBill>()?;
 
-    let mut context = base_context(&req);
-    tera.render_response("bill/new_bill.html", &context)
+    Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
 }
 pub(crate) async fn add_medicine(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
