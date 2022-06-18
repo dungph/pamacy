@@ -18,14 +18,22 @@ pub(crate) async fn new_bill(req: Request<()>) -> Result<Response> {
     let NewBill { bill_id } = req.query()?;
     context.insert("bill_id", &bill_id);
 
-    let bill_id = if let Some(bill_id) = bill_id {
-        bill_id
+    let bill_info = if let Some(bill_id) = bill_id {
+        database::get_bill(bill_id).await?
     } else {
         database::new_bill(req.session().get::<String>("username").unwrap().as_str()).await?
     };
 
-    context.insert("danhsach", &database::list_bill_medicine(bill_id).await?);
-    context.insert("bill_amount", &database::bill_amount(bill_id).await?);
+    context.insert("bill_id", &bill_info.bill_id);
+    context.insert("bill_prescripted", &bill_info.bill_prescripted);
+    context.insert(
+        "danhsach",
+        &database::list_bill_medicine(bill_info.bill_id).await?,
+    );
+    context.insert(
+        "bill_amount",
+        &database::bill_amount(bill_info.bill_id).await?,
+    );
 
     //if let Ok(new) = dbg!(req.query::<MedicineBill>()) {
     //    context.insert("staff_username", &new.staff_username);

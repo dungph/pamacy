@@ -54,9 +54,9 @@ create table customer (
 
 create table sell_bill (
     sell_bill_id serial primary key, 
-    staff_username text references staff(staff_username), 
+    staff_username text references staff(staff_username) not null, 
     inventory_bill_id integer references inventory_bill(inventory_bill_id), 
     discout integer not null default 0,
     customer_id integer references customer(customer_id),
-    is_prescripted boolean
+    is_prescripted boolean not null default false
 );

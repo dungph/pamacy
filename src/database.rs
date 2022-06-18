@@ -302,7 +302,14 @@ pub(crate) async fn get_staff_name(username: &str) -> Result<String> {
     .await
     .map(|obj| obj.staff_fullname)?)
 }
-pub(crate) async fn new_bill(username: &str) -> Result<i32> {
+
+#[derive(Serialize, Debug)]
+pub(crate) struct BillInfo {
+    pub bill_id: i32,
+    pub staff_username: String,
+    pub bill_prescripted: bool,
+}
+pub(crate) async fn new_bill(username: &str) -> Result<BillInfo> {
     let inventory_bill_id = query!(
         r#"
         insert into inventory_bill(staff_username)
@@ -319,7 +326,7 @@ pub(crate) async fn new_bill(username: &str) -> Result<i32> {
         r#"
         insert into sell_bill(staff_username, inventory_bill_id, is_prescripted)
         values ($1, $2, $3)
-        returning sell_bill_id;;;;
+        returning sell_bill_id;
         "#,
         username,
         inventory_bill_id,
@@ -329,7 +336,25 @@ pub(crate) async fn new_bill(username: &str) -> Result<i32> {
     .await?
     .sell_bill_id;
 
-    Ok(bill_id)
+    Ok(BillInfo {
+        bill_id,
+        bill_prescripted: false,
+        staff_username: username.to_string(),
+    })
+}
+
+pub(crate) async fn get_bill(bill_id: i32) -> Result<BillInfo> {
+    Ok(query_as!(
+        BillInfo,
+        r#"
+        select sell_bill_id as bill_id, staff_username , is_prescripted as "bill_prescripted!"
+        from sell_bill
+        where sell_bill_id = $1
+        "#,
+        bill_id
+    )
+    .fetch_one(&*DB)
+    .await?)
 }
 
 pub(crate) async fn update_bill(
