@@ -13,29 +13,15 @@ pub(crate) async fn new_bill(req: Request<()>) -> Result<Response> {
     #[derive(Serialize, Deserialize, Debug)]
     struct NewBill {
         bill_id: Option<i32>,
-        staff_username: Option<String>,
-        bill_prescripted: Option<String>,
     }
 
-    let NewBill {
-        bill_id,
-        staff_username,
-        bill_prescripted,
-    } = req.query()?;
+    let NewBill { bill_id } = req.query()?;
     context.insert("bill_id", &bill_id);
-    context.insert("staff_username", &staff_username);
-    context.insert("bill_prescripted", &bill_prescripted);
 
     let bill_id = if let Some(bill_id) = bill_id {
         bill_id
     } else {
-        database::new_bill(
-            req.session()
-                .get::<String>("staff_username")
-                .unwrap()
-                .as_str(),
-        )
-        .await?
+        database::new_bill(req.session().get::<String>("username").unwrap().as_str()).await?
     };
 
     context.insert("danhsach", &database::list_bill_medicine(bill_id).await?);

@@ -53,7 +53,7 @@ pub(crate) async fn add_medicine(req: Request<()>) -> Result<Response> {
         medicine_prescripted: String,
     }
 
-    let username = req.session().get::<String>("staff_username").unwrap();
+    let username = req.session().get::<String>("username").unwrap();
     let add_form = dbg!(req.query::<MedicineAddForm>()?);
     database::add_drug(
         &username,

@@ -421,6 +421,9 @@ pub(crate) async fn bill_amount(bill_id: i32) -> Result<Option<i64>> {
     .await?
     .and_then(|o| o.amount))
 }
+
+//pub(crate) async fn bill_info()
+
 //pub(crate) async fn new_bill(username: &str) -> Result<i32> {
 //    Ok(query!(
 //        r#"
