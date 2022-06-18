@@ -3,7 +3,7 @@
 
 <p class="title is-5"><b>Lập hóa đơn</b></p>
 <div class="block">
-  <form action="" method="get">
+  <form action="/new_bill/edit_info" method="get">
     <div class="columns is-multiline is-vcentered">
       <div class="column is-2">
         <label class="label">Nhân viên:</label>
@@ -32,7 +32,7 @@
           <label class="label">Kê đơn:</label>
           <div class="select">
             <select name="bill_prescripted" onchange="this.form.submit()">
-              {%if bill_prescripted == 'yes' %}
+              {%if bill_prescripted == true %}
               <option value="yes">Kê đơn</option>
               <option value="no">Không kê đơn</option>
               {%else%}
@@ -79,20 +79,20 @@
     </thead>
     <tbody>
       {%for thuoc in danhsach%}
-      <form action="">
+      <form action="/new_bill/edit_medicine">
         <tr>
-          <td>{{thuoc.medicine_id}}</td>
+          <td>{{thuoc.medicine_code}}</td>
           <td>{{thuoc.medicine_name}}</td>
-          <td>{{thuoc.medicine_type}}</td>
-          <td> <input type="number" name="edit_medicine_price" value="{{thuoc.medicine_price}}"
+          <td>{{thuoc.medicine_group}}</td>
+          <td> <input type="number" name="medicine_price" value="{{thuoc.medicine_price}}"
               onchange="this.form.submit()"></td>
-          <td> <input type="number" name="edit_medicine_quantity" value="{{thuoc.medicine_quantity}}"
+          <td> <input type="number" name="medicine_quantity" value="{{thuoc.medicine_quantity}}"
               onchange="this.form.submit()"></td>
           <td>{{thuoc.medicine_location}}</td>
           <input type="hidden" class="input" type="text" name="bill_id" value="{{bill_id}}">
           <input type="hidden" class="input" type="text" name="staff_username" value="{{staff_username}}">
           <input type="hidden" class="input" type="text" name="bill_prescripted" value="{{bill_prescripted}}">
-          <input type="hidden" class="input" type="text" name="edit_medicine_id" value="{{thuoc.medicine_id}}">
+          <input type="hidden" class="input" type="text" name="medicine_code" value="{{thuoc.medicine_code}}">
         </tr>
       </form>
       {%endfor%}
@@ -109,11 +109,9 @@
 
 </div>
 
-<form id="add_form">
+<form id="add_form" action="/new_bill/add_medicine">
   <input type="hidden" class="input" type="text" name="bill_id" value="{{bill_id}}">
-  <input type="hidden" class="input" type="text" name="staff_username" value="{{staff_username}}">
-  <input type="hidden" class="input" type="text" name="bill_prescripted" value="{{bill_prescripted}}">
-  <input type="hidden" class="input" type="text" name="medicine_id" id="medicine_id">
+  <input type="hidden" class="input" type="text" name="medicine_code" id="medicine_code">
   <input type="hidden" class="input" type="text" name="medicine_price" id="medicine_price">
   <input type="hidden" class="input" type="text" name="medicine_quantity" value="1">
 </form>
@@ -126,7 +124,7 @@
 </button>
 
 
-<form action="/new_bill">
+<form action="/new_bill/complete">
   <div class="modal" id="modal-js-example">
     <div class="modal-background"></div>
     <div class="modal-card">
@@ -229,8 +227,8 @@
 
 <script>
 
-  function submit_medicine(medicine_id, medicine_price) {
-    document.getElementById("medicine_id").value = medicine_id;
+  function submit_medicine(medicine_code, medicine_price) {
+    document.getElementById("medicine_code").value = medicine_code;
     document.getElementById("medicine_price").value = medicine_price;
     document.getElementById("add_form").submit();
 
@@ -267,9 +265,9 @@
         let ele = document.createElement("a");
         ele.classList.add("dropdown-item");
         ele.innerText = e.medicine_name;
-        ele.id = "item-" + e.medicine_id;
+        ele.id = "item-" + e.medicine_code;
         console.log(e.medicine_price);
-        ele.addEventListener("click", function () { submit_medicine(e.medicine_id, e.medicine_price) });
+        ele.addEventListener("click", function () { submit_medicine(e.medicine_code, e.medicine_price) });
         document.getElementById("dropdown_search").appendChild(ele);
       })
     }).catch(err => console.error(err));

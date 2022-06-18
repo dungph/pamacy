@@ -36,93 +36,6 @@ pub(crate) async fn new_bill(req: Request<()>) -> Result<Response> {
         "bill_amount",
         &database::bill_amount(bill_info.bill_id).await?,
     );
-
-    //if let Ok(new) = dbg!(req.query::<MedicineBill>()) {
-    //    context.insert("staff_username", &new.staff_username);
-    //    context.insert("bill_id", &new.bill_id);
-    //    context.insert("customer_phone", &0);
-    //    context.insert("customer_name", &"Unknown");
-    //    context.insert("bill_prescripted", &new.bill_prescripted);
-    //    database::update_bill(
-    //        new.bill_id,
-    //        new.bill_prescripted.as_str() == "yes",
-    //        new.staff_username,
-    //    )
-    //    .await?;
-    //    database::add_bill_medicine(
-    //        new.bill_id,
-    //        new.medicine_id,
-    //        new.medicine_price,
-    //        new.medicine_quantity,
-    //    )
-    //    .await?;
-    //    context.insert(
-    //        "danhsach",
-    //        &database::list_bill_medicine(new.bill_id).await?,
-    //    );
-    //    context.insert(
-    //        "bill_amount",
-    //        &database::bill_amount(new.bill_id).await?.unwrap_or(0),
-    //    );
-    //} else if let Ok(new) = dbg!(req.query::<EditMedicineBill>()) {
-    //    context.insert("staff_username", &new.staff_username);
-    //    context.insert("bill_id", &new.bill_id);
-    //    context.insert("customer_phone", &0);
-    //    context.insert("customer_name", &"Unknown");
-    //    context.insert("bill_prescripted", &new.bill_prescripted);
-
-    //    database::edit_bill_medicine(
-    //        new.bill_id,
-    //        new.edit_medicine_id,
-    //        new.edit_medicine_price,
-    //        new.edit_medicine_quantity,
-    //    )
-    //    .await?;
-    //    context.insert(
-    //        "danhsach",
-    //        &database::list_bill_medicine(new.bill_id).await?,
-    //    );
-    //    context.insert(
-    //        "bill_amount",
-    //        &database::bill_amount(new.bill_id).await?.unwrap_or(0),
-    //    );
-    //} else if let Ok(new) = dbg!(req.query::<NewBill>()) {
-    //    context.insert("staff_username", &new.staff_username);
-    //    context.insert("bill_id", &new.bill_id);
-    //    context.insert("customer_phone", &0);
-    //    context.insert("customer_name", &"Unknown");
-    //    context.insert("bill_prescripted", &new.bill_prescripted);
-    //    database::update_bill(
-    //        new.bill_id,
-    //        new.bill_prescripted.as_str() == "yes",
-    //        new.staff_username,
-    //    )
-    //    .await?;
-
-    //    context.insert(
-    //        "danhsach",
-    //        &database::list_bill_medicine(new.bill_id).await?,
-    //    );
-    //    context.insert(
-    //        "bill_amount",
-    //        &database::bill_amount(new.bill_id).await?.unwrap_or(0),
-    //    );
-    //} else if let Ok(new) = dbg!(req.query::<BillInfo>()) {
-    //    database::complete_bill(new.bill_id, new.customer_name, new.customer_phone).await?;
-    //    return Ok(Redirect::new("/bills").into());
-    //} else {
-    //    let bill_id = database::new_bill(&req.session().get::<String>("username").unwrap()).await?;
-    //    context.insert("bill_id", &bill_id);
-    //    context.insert("staff_id", &1);
-    //    context.insert("bill_prescripted", &"yes".to_string());
-    //    context.insert("customer_name", &"Qua đường".to_string());
-    //    context.insert("customer_phone", &"0".to_string());
-    //    context.insert(
-    //        "danhsach",
-    //        &database::list_bill_medicine(i32::max_value()).await?,
-    //    );
-    //    context.insert("bill_amount", &0);
-    //}
     tera.render_response("bill/new_bill.html", &context)
 }
 
@@ -133,7 +46,7 @@ pub(crate) async fn edit_info(req: Request<()>) -> Result<Response> {
         staff_username: String,
         bill_prescripted: String,
     }
-    let new_info = req.query::<NewBill>()?;
+    let new_info = dbg!(req.query::<NewBill>()?);
     database::update_bill(
         new_info.bill_id,
         new_info.bill_prescripted == "yes",
@@ -154,7 +67,7 @@ pub(crate) async fn add_medicine(req: Request<()>) -> Result<Response> {
     database::add_bill_medicine(new_info.bill_id, new_info.medicine_code).await?;
     Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
 }
-pub(crate) async fn edit_price_quantity(req: Request<()>) -> Result<Response> {
+pub(crate) async fn edit_medicine(req: Request<()>) -> Result<Response> {
     #[derive(Deserialize, Debug)]
     struct EditMedicine {
         bill_id: i32,
@@ -164,7 +77,13 @@ pub(crate) async fn edit_price_quantity(req: Request<()>) -> Result<Response> {
     }
 
     let new_info = req.query::<EditMedicine>()?;
-    database::add_bill_medicine(new_info.bill_id, new_info.medicine_code).await?;
+    database::edit_bill_medicine(
+        new_info.bill_id,
+        &new_info.medicine_code,
+        new_info.medicine_price,
+        new_info.medicine_quantity,
+    )
+    .await?;
     Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
 }
 pub(crate) async fn complete(req: Request<()>) -> Result<Response> {
@@ -182,5 +101,5 @@ pub(crate) async fn complete(req: Request<()>) -> Result<Response> {
         new_info.customer_phone,
     )
     .await?;
-    Ok(Redirect::new(format!("/new_bill?bill_id={}", new_info.bill_id)).into())
+    Ok(Redirect::new("/bills").into())
 }

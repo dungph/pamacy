@@ -31,8 +31,8 @@ pub(crate) fn base_context(req: &Request<()>) -> Context {
 async fn bills(req: Request<()>) -> Result<Response> {
     let mut tera = TERA.lock().await;
     tera.full_reload()?;
-    let context = base_context(&req);
-    //context.insert("list_bill_sumary", &database::all_bill(true).await?);
+    let mut context = base_context(&req);
+    context.insert("list_bill_sumary", &dbg!(database::all_bill(true).await?));
 
     tera.render_response("bill/bills.html", &context)
 }
@@ -138,9 +138,9 @@ fn main() -> anyhow::Result<()> {
     tide.at("/new_bill/add_medicine")
         .with(Auth)
         .get(bill::add_medicine);
-    tide.at("/new_bill/edit_price_quantity")
+    tide.at("/new_bill/edit_medicine")
         .with(Auth)
-        .get(bill::edit_price_quantity);
+        .get(bill::edit_medicine);
     tide.at("/new_bill/complete").with(Auth).get(bill::complete);
 
     tide.at("/manage").with(Auth).get(manage::manage_page);
