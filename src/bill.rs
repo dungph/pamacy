@@ -72,7 +72,6 @@ pub(crate) async fn edit_medicine(req: Request<()>) -> Result<Response> {
     struct EditMedicine {
         bill_id: i32,
         medicine_code: String,
-        medicine_price: i32,
         medicine_quantity: i32,
     }
 
@@ -80,7 +79,6 @@ pub(crate) async fn edit_medicine(req: Request<()>) -> Result<Response> {
     database::edit_bill_medicine(
         new_info.bill_id,
         &new_info.medicine_code,
-        new_info.medicine_price,
         new_info.medicine_quantity,
     )
     .await?;

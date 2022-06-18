@@ -166,7 +166,11 @@ fn main() -> anyhow::Result<()> {
             let query = req.query::<FindMedicine>()?;
             let res: Response = Response::builder(200)
                 .body(serde_json::to_value(
-                    database::find_drug(&query.medicine_name, "").await?,
+                    database::find_drug(&query.medicine_name, "")
+                        .await?
+                        .into_iter()
+                        .filter(|me| me.medicine_quantity > Some(0))
+                        .collect::<Vec<_>>(),
                 )?)
                 .into();
             Ok(res)

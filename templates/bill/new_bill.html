@@ -50,7 +50,8 @@
             <div class="field">
               <label class="label">Tim kiem:</label>
               <p class="control is-expanded has-icons-right">
-                <input id="search_medicine" class="input" type="search" placeholder="Search..." oninput="out_input()" />
+                <input id="search_medicine" class="input" type="search" placeholder="Search..." oninput="out_input()"
+                  onfocus="document.getElementById('dropdown_control').classList.add('is-active');" />
                 <span class="icon is-small is-right"><i class="fas fa-search"></i></span>
               </p>
             </div>
@@ -84,9 +85,8 @@
           <td>{{thuoc.medicine_code}}</td>
           <td>{{thuoc.medicine_name}}</td>
           <td>{{thuoc.medicine_group}}</td>
-          <td> <input type="number" name="medicine_price" value="{{thuoc.medicine_price}}"
-              onchange="this.form.submit()"></td>
-          <td> <input type="number" name="medicine_quantity" value="{{thuoc.medicine_quantity}}"
+          <td>{{thuoc.medicine_price}}</td>
+          <td> <input class="input" type="number" name="medicine_quantity" value="{{thuoc.medicine_quantity}}"
               onchange="this.form.submit()"></td>
           <td>{{thuoc.medicine_location}}</td>
           <input type="hidden" class="input" type="text" name="bill_id" value="{{bill_id}}">
@@ -96,14 +96,6 @@
         </tr>
       </form>
       {%endfor%}
-      <!--<tr>
-          <td><input class="input" type="text" name="medicine_id"></td>
-          <td><input class="input" type="text" name="medicine_name" list="medicine_name_input"></td>
-          <td></td>
-          <td><input class="input" type="text" name="medicine_price"> </td>
-          <td><input class="input" type="text" name="medicine_quantity" value="1"> </td>
-          <td></td>
-        </tr>-->
     </tbody>
   </table>
 
@@ -139,8 +131,7 @@
             <div class="field">
               <label class="label">Tên Khách hàng</label>
               <div class="control">
-                <input class="input" type="text" placeholder="Nhập tên" name="customer_name" 
-                >
+                <input class="input" type="text" placeholder="Nhập tên" name="customer_name">
               </div>
             </div>
           </div>
@@ -149,8 +140,7 @@
             <div class="field">
               <label class="label">Số điện thoại</label>
               <div class="control">
-                <input class="input" type="text" placeholder="Số điện thoại" name="customer_phone"
-                  >
+                <input class="input" type="text" placeholder="Số điện thoại" name="customer_phone">
               </div>
             </div>
           </div>
@@ -267,7 +257,7 @@
         ele.innerText = e.medicine_name;
         ele.id = "item-" + e.medicine_code;
         console.log(e.medicine_price);
-        ele.addEventListener("click", function () { submit_medicine(e.medicine_code, e.medicine_price) });
+        ele.addEventListener("click", function () {submit_medicine(e.medicine_code, e.medicine_price)});
         document.getElementById("dropdown_search").appendChild(ele);
       })
     }).catch(err => console.error(err));

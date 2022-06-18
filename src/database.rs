@@ -32,18 +32,18 @@ pub(crate) async fn migrate() -> Result<()> {
 
 #[derive(Serialize, Debug)]
 pub(crate) struct MedicineInfo {
-    medicine_code: String,
-    medicine_name: String,
-    medicine_price: i32,
-    medicine_register: String,
-    medicine_content: String,
-    medicine_active_ingredients: String,
-    medicine_pack_form: String,
-    medicine_group: String,
-    medicine_route: String,
-    medicine_quantity: Option<i64>,
-    medicine_location: String,
-    medicine_prescripted: bool,
+    pub medicine_code: String,
+    pub medicine_name: String,
+    pub medicine_price: i32,
+    pub medicine_register: String,
+    pub medicine_content: String,
+    pub medicine_active_ingredients: String,
+    pub medicine_pack_form: String,
+    pub medicine_group: String,
+    pub medicine_route: String,
+    pub medicine_quantity: Option<i64>,
+    pub medicine_location: String,
+    pub medicine_prescripted: bool,
 }
 
 pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<MedicineInfo>> {
@@ -507,7 +507,6 @@ pub(crate) async fn add_bill_medicine(bill_id: i32, medicine_code: String) -> Re
 pub(crate) async fn edit_bill_medicine(
     bill_id: i32,
     medicine_code: &str,
-    medicine_price: i32,
     mut medicine_quantity: i32,
 ) -> Result<()> {
     let inventory_bill_id = query!(
@@ -566,13 +565,11 @@ pub(crate) async fn edit_bill_medicine(
             insert into medicine_inventory_bill(
                 inventory_bill_id,
                 medicine_id,
-                medicine_inventory_price,
                 medicine_inventory_quantity
-            ) values ($1, $2, $3, $4)
+            ) values ($1, $2, $3)
             "#,
                 inventory_bill_id,
                 info.0,
-                medicine_price,
                 if info.2 < insert {
                     insert -= info.2;
                     info.2 as i32 * -1
