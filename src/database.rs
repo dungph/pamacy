@@ -19,9 +19,9 @@ pub(crate) async fn migrate() -> Result<()> {
     sqlx::migrate!().run(&*DB).await?;
     query!(
         r#"
-        insert into staff(staff_id, staff_fullname, staff_username, staff_password, staff_is_manager, staff_is_seller)
-        values (1, 'Administrator', 'admin', 'admin', true, true)
-        on conflict (staff_id) do nothing;
+        insert into staff(staff_fullname, staff_username, staff_password, staff_is_manager, staff_is_seller)
+        values ('Administrator', 'admin', 'admin', true, true)
+        on conflict (staff_username) do nothing;
         "#
     )
     .execute(&*DB)
@@ -33,7 +33,6 @@ pub(crate) async fn migrate() -> Result<()> {
 pub(crate) struct ManageMedicineTemplate {
     medicine_code: String,
     medicine_name: String,
-    medicine_type: String,
     medicine_price: i32,
     medicine_register: String,
     medicine_content: String,
@@ -52,7 +51,6 @@ pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageM
         r#"
             select medicine.medicine_code as "medicine_code!",
                 medicine_name as "medicine_name!",
-                medicine_type as "medicine_type!",
                 medicine_price as "medicine_price!",
                 medicine_register as "medicine_register!",
                 medicine_content as "medicine_content!",
@@ -66,11 +64,10 @@ pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageM
             from medicine_info
             join medicine on medicine.medicine_code = medicine_info.medicine_code
             join medicine_inventory_bill on medicine_inventory_bill.medicine_id = medicine.medicine_id
-            where (medicine_name ~* $1 and medicine_type ~* $2)
+            where (medicine_name ~* $1 and medicine_group ~* $2)
             group by (
                 medicine.medicine_code,
                 medicine_name, 
-                medicine_type,
                 medicine_price,
                 medicine_register,
                 medicine_content,
@@ -83,7 +80,7 @@ pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageM
                 )
             "#,
         name,
-        drug_type
+        drug_type,
     )
     .fetch_all(&*DB)
     .await?)
@@ -92,7 +89,6 @@ pub(crate) async fn find_drug(name: &str, drug_type: &str) -> Result<Vec<ManageM
 pub(crate) async fn add_drug(
     medicine_code: String,
     medicine_name: String,
-    medicine_type: String,
     medicine_price: i32,
     medicine_register: String,
     medicine_content: String,
@@ -108,7 +104,6 @@ pub(crate) async fn add_drug(
         r#"insert into medicine_info(
                 medicine_code,
                 medicine_name, 
-                medicine_type,
                 medicine_price,
                 medicine_register,
                 medicine_content,
@@ -119,12 +114,11 @@ pub(crate) async fn add_drug(
                 medicine_locations,
                 medicine_route
             )
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         on conflict (medicine_code) do nothing;
             "#,
         medicine_code,
         medicine_name,
-        medicine_type,
         medicine_price,
         medicine_register,
         medicine_content,
@@ -172,11 +166,58 @@ pub(crate) async fn add_drug(
         ).execute(&*DB).await?;
     Ok(())
 }
+
+pub(crate) async fn edit_drug(
+    medicine_code: String,
+    medicine_name: String,
+    medicine_price: i32,
+    medicine_register: String,
+    medicine_content: String,
+    medicine_active_ingredients: String,
+    medicine_pack_form: String,
+    medicine_group: String,
+    medicine_route: String,
+    medicine_quantity: i32,
+    medicine_location: String,
+    medicine_prescripted: bool,
+) -> Result<()> {
+    query!(
+        r#"
+            update medicine_info
+                set medicine_name = $2, 
+                medicine_price = $3,
+                medicine_register = $4,
+                medicine_content = $5,
+                medicine_active_ingredients = $6,
+                medicine_prescripted = $7,
+                medicine_pack_form = $8,
+                medicine_group = $9,
+                medicine_locations = $10,
+                medicine_route = $11
+                where medicine_code = $1
+                "#,
+        medicine_code,
+        medicine_name,
+        medicine_price,
+        medicine_register,
+        medicine_content,
+        medicine_active_ingredients,
+        medicine_prescripted,
+        medicine_pack_form,
+        medicine_group,
+        medicine_location,
+        medicine_route
+    )
+    .execute(&*DB)
+    .await?;
+    Ok(())
+}
+
 pub(crate) async fn list_drug_type() -> anyhow::Result<Vec<String>> {
     Ok(query!(
-        r#"select medicine_type as "medicine_type!"
+        r#"select medicine_group as "medicine_type!"
               from medicine_info
-              group by medicine_type
+              group by medicine_group
               "#,
     )
     .fetch_all(&*DB)
@@ -197,54 +238,6 @@ pub(crate) async fn list_location() -> Result<Vec<String>> {
     .into_iter()
     .map(|obj| obj.medicine_locations)
     .collect())
-}
-pub(crate) async fn edit_drug(
-    medicine_code: String,
-    medicine_name: String,
-    medicine_type: String,
-    medicine_price: i32,
-    medicine_register: String,
-    medicine_content: String,
-    medicine_active_ingredients: String,
-    medicine_pack_form: String,
-    medicine_group: String,
-    medicine_route: String,
-    medicine_quantity: i32,
-    medicine_location: String,
-    medicine_prescripted: bool,
-) -> Result<()> {
-    query!(
-        r#"
-            update medicine_info
-                set medicine_name = $2, 
-                medicine_type = $3,
-                medicine_price = $4,
-                medicine_register = $5,
-                medicine_content = $6,
-                medicine_active_ingredients = $7,
-                medicine_prescripted = $8,
-                medicine_pack_form = $9,
-                medicine_group = $10,
-                medicine_locations = $11,
-                medicine_route = $12
-                where medicine_code = $1
-                "#,
-        medicine_code,
-        medicine_name,
-        medicine_type,
-        medicine_price,
-        medicine_register,
-        medicine_content,
-        medicine_active_ingredients,
-        medicine_prescripted,
-        medicine_pack_form,
-        medicine_group,
-        medicine_location,
-        medicine_route
-    )
-    .execute(&*DB)
-    .await?;
-    Ok(())
 }
 
 pub(crate) async fn match_user(username: &str, password: &str) -> Result<bool> {
@@ -308,26 +301,27 @@ pub(crate) async fn get_staff_name(username: &str) -> Result<String> {
     .map(|obj| obj.staff_fullname)?)
 }
 
-//pub(crate) async fn update_bill(
-//    bill_id: i32,
-//    bill_prescripted: bool,
-//    staff_username: String,
-//) -> Result<()> {
-//    query!(
-//        r#"
-//        update bill
-//            set staff_username = $2,
-//            bill_prescripted = $3
-//        where bill_id = $1
-//        "#,
-//        bill_id,
-//        staff_username,
-//        bill_prescripted,
-//    )
-//    .execute(&*DB)
-//    .await?;
-//    Ok(())
-//}
+pub(crate) async fn update_bill(
+    bill_id: i32,
+    bill_prescripted: bool,
+    staff_username: String,
+) -> Result<()> {
+    query!(
+        r#"
+        update sell_bill
+            set staff_username = $2,
+            is_prescripted = $3
+        where sell_bill_id = $1
+        "#,
+        bill_id,
+        staff_username,
+        bill_prescripted,
+    )
+    .execute(&*DB)
+    .await?;
+    Ok(())
+}
+
 //#[derive(Serialize, Debug, Clone)]
 //pub(crate) struct BillMedicineInfo {
 //    medicine_id: i32,

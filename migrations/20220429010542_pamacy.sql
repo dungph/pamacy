@@ -1,17 +1,15 @@
 create table staff (
-    staff_id serial primary key,
+    staff_username text primary key,
     staff_info text not null default '',
     staff_is_manager boolean not null default false,
     staff_is_seller boolean not null default false,
     staff_fullname text not null default '',
-    staff_username text not null default '',
     staff_password text not null default ''
 );
 
 create table medicine_info (
     medicine_code text primary key,
     medicine_name text not null default '',
-    medicine_type text not null default '',
     medicine_price integer not null default 0,
     medicine_register text not null default '',
     medicine_content text not null default '',
@@ -34,7 +32,7 @@ create table inventory_bill(
     inventory_bill_id serial primary key, 
     inventory_bill_time timestamptz not null default now(),
     inventory_bill_complete boolean not null default false,
-    staff_id integer references staff(staff_id) not null
+    staff_username text references staff(staff_username) not null
 );
 
 create table medicine_inventory_bill (
@@ -50,15 +48,15 @@ create table customer (
     customer_age text not null default '',
     customer_gender text not null default '',
     customer_phone text not null default '', 
+    customer_citizen_id text,
     customer_address text not null default ''
 );
 
 create table sell_bill (
     sell_bill_id serial primary key, 
-    sraff_id integer references staff(staff_id), 
+    staff_username text references staff(staff_username), 
     inventory_bill_id integer references inventory_bill(inventory_bill_id), 
     discout integer not null default 0,
     customer_id integer references customer(customer_id),
-    customer_citizen_id text,
-    is_prescripted boolean check ((is_prescripted = false) OR customer_citizen_id is not null)
+    is_prescripted boolean
 );
